@@ -6,9 +6,9 @@ async function seedDatabase() {
         console.log('🌱 Seeding database with sample data...');
 
         // Create admin user
-        const adminPassword = await bcrypt.hash('admin123', 12);
+        const adminPassword = await bcrypt.hash('fuck', 12);
         await database.run(
-            'INSERT OR IGNORE INTO users (email, password_hash, full_name, role) VALUES (?, ?, ?, ?)', ['admin@roster86.com', adminPassword, 'Admin User', 'admin']
+            'INSERT OR IGNORE INTO users (email, password_hash, full_name, role) VALUES (?, ?, ?, ?)', ['papichulo@roster86.com', adminPassword, 'Papichulo Admin', 'admin']
         );
 
         // Create manager user
@@ -171,7 +171,7 @@ async function seedDatabase() {
         );
 
         console.log('✅ Database seeded successfully!');
-        console.log('👤 Admin User: admin@roster86.com / admin123');
+        console.log('👤 Admin User: papichulo@roster86.com / fuck');
         console.log('👤 Manager User: manager@roster86.com / manager123');
         console.log('👥 Sample employees, shift templates, and schedule created');
 

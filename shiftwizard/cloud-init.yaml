@@ -25,7 +25,7 @@ users:
     sudo: ["ALL=(ALL) NOPASSWD:ALL"]
     shell: /bin/bash
     ssh_authorized_keys:
-      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIeXSyDYxoRn8N2NPIAonWwf4ji2Bqx/ZAFH5KOsqJLw ryan.champion2@icloud.com # Replace with your actual SSH public key
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIeXSyDYxoRn8N2NPIAonWwf4ji2Bqx/ZAFH5KOsqJLw ryan.champion2@icloud.com
 
 write_files:
   - path: /home/roster86/.env
@@ -93,7 +93,7 @@ write_files:
 
       # Clone Roster86 repository
       cd /home/roster86
-      git clone https://github.com/yourusername/roster86.git app
+      git clone https://github.com/MilkWithKnives/roster86.git app
       cd app
 
       # Copy configuration files
@@ -165,7 +165,7 @@ final_message: |
 
   🔐 SSH Access: ssh roster86@YOUR_SERVER_IP
   🌐 Web Access: https://YOUR_SERVER_IP
-  📊 Admin Login: admin@roster86.com / admin123
+  📊 Admin Login: papichulo@roster86.com / fuck
 
   📋 Next Steps:
   1. Point your domain to this server IP
