@@ -1,0 +1,111 @@
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="400" height="400" fill="#1e2329"/>
+  
+  <!-- Main cut sheet -->
+  <g transform="translate(200, 200)">
+    <!-- Sheet background -->
+    <rect x="-130" y="-130" width="260" height="260" fill="#ffffff" rx="4"/>
+    
+    <!-- Clipboard binding holes at top -->
+    <circle cx="-80" cy="-110" r="8" fill="#1e2329"/>
+    <circle cx="0" cy="-110" r="8" fill="#1e2329"/>
+    <circle cx="80" cy="-110" r="8" fill="#1e2329"/>
+    
+    <!-- Header bar -->
+    <rect x="-130" y="-90" width="260" height="30" fill="#2c3e50"/>
+    
+    <!-- ROSTER 86 header -->
+    <text x="0" y="-68" 
+          font-family="Arial, sans-serif" 
+          font-size="18" 
+          font-weight="bold" 
+          text-anchor="middle" 
+          fill="#ffffff"
+          letter-spacing="3">ROSTER 86</text>
+    
+    <!-- Grid lines -->
+    <g stroke="#e0e0e0" stroke-width="0.5">
+      <line x1="-130" y1="-35" x2="130" y2="-35"/>
+      <line x1="-130" y1="-5" x2="130" y2="-5"/>
+      <line x1="-130" y1="25" x2="130" y2="25"/>
+      <line x1="-130" y1="55" x2="130" y2="55"/>
+      <line x1="-130" y1="85" x2="130" y2="85"/>
+      <line x1="-130" y1="115" x2="130" y2="115"/>
+      
+      <!-- Vertical divider -->
+      <line x1="-30" y1="-60" x2="-30" y2="130" stroke-width="1"/>
+    </g>
+    
+    <!-- Squiggly names (left column) - more organic/handwritten -->
+    <g>
+      <!-- Name 1 - active -->
+      <path d="M -110,-15 Q -105,-17 -100,-15 T -90,-15 Q -85,-13 -80,-15 T -70,-15 Q -65,-17 -60,-15 T -50,-15" 
+            stroke="#2c3e50" 
+            stroke-width="2" 
+            fill="none"
+            stroke-linecap="round"/>
+      
+      <!-- Name 2 - 86'd -->
+      <g>
+        <path d="M -110,15 Q -108,13 -103,15 T -95,15 Q -92,17 -87,15 T -78,15 Q -74,13 -68,15 T -58,15" 
+              stroke="#2c3e50" 
+              stroke-width="2" 
+              fill="none"
+              opacity="0.3"
+              stroke-linecap="round"/>
+        <line x1="-115" y1="15" x2="-53" y2="15" stroke="#e74c3c" stroke-width="2.5"/>
+      </g>
+      
+      <!-- Name 3 - active -->
+      <path d="M -110,45 Q -107,43 -102,45 T -93,45 Q -88,47 -83,45 T -73,45 Q -68,43 -63,45 T -53,45 Q -50,47 -45,45" 
+            stroke="#2c3e50" 
+            stroke-width="2" 
+            fill="none"
+            stroke-linecap="round"/>
+      
+      <!-- Name 4 - active -->
+      <path d="M -110,75 Q -106,77 -101,75 T -92,75 Q -87,73 -82,75 T -72,75 Q -68,77 -63,75" 
+            stroke="#2c3e50" 
+            stroke-width="2" 
+            fill="none"
+            stroke-linecap="round"/>
+      
+      <!-- Name 5 - 86'd -->
+      <g>
+        <path d="M -110,105 Q -107,103 -102,105 T -94,105 Q -90,107 -85,105 T -76,105 Q -72,103 -67,105 T -57,105" 
+              stroke="#2c3e50" 
+              stroke-width="2" 
+              fill="none"
+              opacity="0.3"
+              stroke-linecap="round"/>
+        <line x1="-115" y1="105" x2="-52" y2="105" stroke="#e74c3c" stroke-width="2.5"/>
+      </g>
+    </g>
+    
+    <!-- Shift blocks (right side) -->
+    <g>
+      <!-- Row 1 shifts -->
+      <rect x="-20" y="-28" width="35" height="18" fill="#3498db" rx="2"/>
+      <rect x="20" y="-28" width="45" height="18" fill="#3498db" rx="2"/>
+      <rect x="70" y="-28" width="30" height="18" fill="#3498db" rx="2"/>
+      
+      <!-- Row 2 - 86'd (faded) -->
+      <rect x="-20" y="2" width="40" height="18" fill="#bdc3c7" opacity="0.5" rx="2"/>
+      <rect x="25" y="2" width="50" height="18" fill="#bdc3c7" opacity="0.5" rx="2"/>
+      
+      <!-- Row 3 shifts -->
+      <rect x="-20" y="32" width="25" height="18" fill="#3498db" rx="2"/>
+      <rect x="10" y="32" width="45" height="18" fill="#3498db" rx="2"/>
+      <rect x="60" y="32" width="35" height="18" fill="#3498db" rx="2"/>
+      
+      <!-- Row 4 shifts -->
+      <rect x="-20" y="62" width="55" height="18" fill="#3498db" rx="2"/>
+      <rect x="40" y="62" width="40" height="18" fill="#3498db" rx="2"/>
+      
+      <!-- Row 5 - 86'd (faded) -->
+      <rect x="-20" y="92" width="60" height="18" fill="#bdc3c7" opacity="0.5" rx="2"/>
+      <rect x="45" y="92" width="35" height="18" fill="#bdc3c7" opacity="0.5" rx="2"/>
+    </g>
+  </g>
+</svg>
