@@ -1,9 +1,7 @@
-
-
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { User } from '@/api/entities';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   Calendar, 
   Users, 
@@ -76,9 +74,10 @@ const navigationItems = [
   }
 ];
 
-export default function Layout({ children, currentPageName }) {
+export default function Layout({ currentPageName, children }) {
   const location = useLocation();
-  const [user, setUser] = React.useState(null);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [isDarkMode, setIsDarkMode] = React.useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('theme') === 'dark' || 
@@ -86,18 +85,6 @@ export default function Layout({ children, currentPageName }) {
     }
     return false;
   });
-
-  React.useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const currentUser = await User.me();
-        setUser(currentUser);
-      } catch (e) {
-        console.error("Failed to fetch user:", e);
-      }
-    };
-    fetchUser();
-  }, []);
 
   React.useEffect(() => {
     localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
@@ -109,8 +96,8 @@ export default function Layout({ children, currentPageName }) {
   };
   
   const handleLogout = async () => {
-    await User.logout();
-    window.location.reload(); // Reload to clear state and redirect to login
+    await logout();
+    navigate('/login');
   };
 
   return (
@@ -322,7 +309,7 @@ export default function Layout({ children, currentPageName }) {
           </SidebarContent>
         </Sidebar>
 
-        <main className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0">
           {/* Header */}
           <header className="premium-card m-4 mb-2 p-4 animate-fade-in-up">
             <div className="flex items-center justify-between">
@@ -357,25 +344,21 @@ export default function Layout({ children, currentPageName }) {
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-3 focus:outline-none">
-                      <div className="w-12 h-12 rounded-2xl gradient-tertiary flex items-center justify-center shadow-lg">
-                        <span className="text-white font-bold text-lg">
-                          {user ? user.full_name.charAt(0).toUpperCase() : ''}
-                        </span>
+                    <Button variant="ghost" className="flex items-center gap-2">
+                      <img
+                        src={`https://i.pravatar.cc/150?u=${user?.email}`}
+                        alt="User Avatar"
+                        className="h-8 w-8 rounded-full"
+                      />
+                      <div>
+                        <p className="font-semibold text-sm">{user?.full_name}</p>
+                        <p className="text-xs text-gray-500">{user?.role}</p>
                       </div>
-                      <div className="hidden lg:block text-left">
-                        <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-                          {user ? user.full_name : 'Loading...'}
-                        </p>
-                        <p className="text-xs capitalize" style={{ color: 'var(--text-tertiary)' }}>
-                          {user ? user.role : '...'}
-                        </p>
-                      </div>
-                    </button>
+                    </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="premium-card mt-2" align="end">
+                  <DropdownMenuContent align="end">
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                    <DropdownMenuSeparator style={{ borderColor: 'var(--border-secondary)' }} />
+                    <DropdownMenuSeparator />
                     <Link to={createPageUrl("Profile")}>
                       <DropdownMenuItem className="cursor-pointer">
                         <UserIcon className="mr-2 h-4 w-4" />
@@ -388,7 +371,7 @@ export default function Layout({ children, currentPageName }) {
                         <span>Settings</span>
                       </DropdownMenuItem>
                     </Link>
-                    <DropdownMenuSeparator style={{ borderColor: 'var(--border-secondary)' }} />
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Log out</span>
@@ -399,12 +382,10 @@ export default function Layout({ children, currentPageName }) {
               </div>
             </div>
           </header>
-
-          {/* Content */}
-          <div className="flex-1 p-4 pt-2 min-w-0 animate-fade-in-up">
+          <main className="flex-1 overflow-y-auto p-8">
             {children}
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
     </SidebarProvider>
   );

@@ -1,37 +1,25 @@
 import Layout from "./Layout.jsx";
-
 import Dashboard from "./Dashboard";
-
 import Employees from "./Employees";
-
 import ShiftTemplates from "./ShiftTemplates";
-
 import Schedules from "./Schedules";
-
 import Settings from "./Settings";
-
 import Pricing from "./Pricing";
-
 import Profile from "./Profile";
+import Login from "./Login";
+import Register from "./Register";
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
 const PAGES = {
-    
     Dashboard: Dashboard,
-    
     Employees: Employees,
-    
     ShiftTemplates: ShiftTemplates,
-    
     Schedules: Schedules,
-    
     Settings: Settings,
-    
     Pricing: Pricing,
-    
     Profile: Profile,
-    
 }
 
 function _getCurrentPage(url) {
@@ -52,27 +40,30 @@ function PagesContent() {
     const location = useLocation();
     const currentPage = _getCurrentPage(location.pathname);
     
+    const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+
+    if (isAuthPage) {
+        return (
+            <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+            </Routes>
+        );
+    }
+    
     return (
         <Layout currentPageName={currentPage}>
             <Routes>            
-                
-                    <Route path="/" element={<Dashboard />} />
-                
-                
-                <Route path="/Dashboard" element={<Dashboard />} />
-                
-                <Route path="/Employees" element={<Employees />} />
-                
-                <Route path="/ShiftTemplates" element={<ShiftTemplates />} />
-                
-                <Route path="/Schedules" element={<Schedules />} />
-                
-                <Route path="/Settings" element={<Settings />} />
-                
-                <Route path="/Pricing" element={<Pricing />} />
-                
-                <Route path="/Profile" element={<Profile />} />
-                
+                <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                <Route path="/employees" element={<ProtectedRoute><Employees /></ProtectedRoute>} />
+                <Route path="/shifttemplates" element={<ProtectedRoute><ShiftTemplates /></ProtectedRoute>} />
+                <Route path="/schedules" element={<ProtectedRoute><Schedules /></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                <Route path="/pricing" element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
             </Routes>
         </Layout>
     );

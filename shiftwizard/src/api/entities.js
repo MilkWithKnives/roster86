@@ -7,6 +7,10 @@ export const Employee = {
         return response.data;
     },
 
+    async list() {
+        return this.findAll();
+    },
+
     async findById(id) {
         const response = await apiClient.get(`/employees/${id}`);
         return response.data;
@@ -35,6 +39,10 @@ export const ShiftTemplate = {
         return response.data;
     },
 
+    async list() {
+        return this.findAll();
+    },
+
     async findById(id) {
         const response = await apiClient.get(`/shift-templates/${id}`);
         return response.data;
@@ -60,6 +68,15 @@ export const ShiftTemplate = {
 export const Schedule = {
     async findAll() {
         const response = await apiClient.get("/schedules");
+        return response.data;
+    },
+
+    async list(orderBy, limit) {
+        const params = new URLSearchParams();
+        if (orderBy) params.append('orderBy', orderBy);
+        if (limit) params.append('limit', limit);
+
+        const response = await apiClient.get(`/schedules?${params.toString()}`);
         return response.data;
     },
 
@@ -91,6 +108,15 @@ export const Assignment = {
         return response.data;
     },
 
+    async list(orderBy, limit) {
+        const params = new URLSearchParams();
+        if (orderBy) params.append('orderBy', orderBy);
+        if (limit) params.append('limit', limit);
+
+        const response = await apiClient.get(`/assignments?${params.toString()}`);
+        return response.data;
+    },
+
     async findById(id) {
         const response = await apiClient.get(`/assignments/${id}`);
         return response.data;
@@ -113,16 +139,23 @@ export const Assignment = {
 };
 
 // AppSettings API
+/*
 export const AppSettings = {
-    asyncget() {
+    async get() {
         const response = await apiClient.get("/app-settings");
         return response.data;
     },
+
+    async list() {
+        return this.get();
+    },
+
     async update(data) {
         const response = await apiClient.put("/app-settings", data);
         return response.data;
     },
 };
+*/
 
 // Auth API
 export const User = {

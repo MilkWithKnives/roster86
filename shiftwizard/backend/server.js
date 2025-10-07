@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
+const database = require('./models/database');
 const authRoutes = require('./routes/auth');
 const employeeRoutes = require('./routes/employees');
 const shiftTemplateRoutes = require('./routes/shift-templates');
@@ -85,8 +86,21 @@ app.use('*', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-    console.log(`🚀 ShiftWizard Backend running on port ${PORT}`);
-    console.log(`📊 Health check: http://localhost:${PORT}/health`);
-    console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
-});
+async function startServer() {
+    try {
+        // Initialize database first
+        await database.init();
+        console.log('✅ Database initialized successfully');
+
+        app.listen(PORT, () => {
+            console.log(`🚀 ShiftWizard Backend running on port ${PORT}`);
+            console.log(`📊 Health check: http://localhost:${PORT}/health`);
+            console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
+        });
+    } catch (error) {
+        console.error('❌ Failed to start server:', error);
+        process.exit(1);
+    }
+}
+
+startServer();
