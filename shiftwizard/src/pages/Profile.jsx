@@ -46,7 +46,7 @@ export default function ProfilePage() {
         e.preventDefault();
         setIsSaving(true);
         try {
-            await User.updateMyUserData(formData);
+            await User.updateProfile(formData);
             setShowSuccess(true);
             setTimeout(() => setShowSuccess(false), 2000);
         } catch (error) {

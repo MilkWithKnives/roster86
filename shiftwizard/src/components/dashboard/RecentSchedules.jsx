@@ -78,7 +78,7 @@ export default function RecentSchedules({ schedules, isLoading }) {
                       </div>
                       <div className="flex-1">
                         <h3 className="font-semibold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>
-                          Week of {format(new Date(schedule.week_start_date), "MMM d, yyyy")}
+                          {schedule.name || `Week of ${format(new Date(schedule.start_date), "MMM d, yyyy")}`}
                         </h3>
                         <div className="flex items-center gap-4 text-sm" style={{ color: 'var(--text-tertiary)' }}>
                           <span className="flex items-center gap-1">

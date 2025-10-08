@@ -1,5 +1,18 @@
 import { apiClient } from "./apiClient";
 
+apiClient.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem("authToken");
+        if (token) {
+            config.headers["Authorization"] = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
 // Employee API
 export const Employee = {
     async findAll() {
@@ -139,7 +152,6 @@ export const Assignment = {
 };
 
 // AppSettings API
-/*
 export const AppSettings = {
     async get() {
         const response = await apiClient.get("/app-settings");
@@ -155,7 +167,6 @@ export const AppSettings = {
         return response.data;
     },
 };
-*/
 
 // Auth API
 export const User = {

@@ -8,10 +8,26 @@ const router = express.Router();
 // All routes require authentication
 router.use(authenticateToken);
 
-// Validation middleware
-const validateEmployee = [
+// Validation middleware for creating employees
+const validateEmployeeCreate = [
     body('employee_id').trim().notEmpty().withMessage('Employee ID is required'),
     body('full_name').trim().isLength({ min: 2 }).withMessage('Full name is required'),
+    body('email').optional().isEmail().normalizeEmail(),
+    body('phone').optional().trim(),
+    body('department').optional().trim(),
+    body('position').optional().trim(),
+    body('hire_date').optional().isISO8601().withMessage('Invalid hire date'),
+    body('hourly_rate').optional().isFloat({ min: 0 }).withMessage('Hourly rate must be a positive number'),
+    body('max_hours_per_week').optional().isInt({ min: 1, max: 168 }).withMessage('Max hours per week must be between 1 and 168'),
+    body('availability').optional().isJSON().withMessage('Availability must be valid JSON'),
+    body('skills').optional().isJSON().withMessage('Skills must be valid JSON'),
+    body('status').optional().isIn(['active', 'inactive', 'terminated']).withMessage('Invalid status')
+];
+
+// Validation middleware for updating employees (all fields optional)
+const validateEmployeeUpdate = [
+    body('employee_id').optional().trim().notEmpty().withMessage('Employee ID cannot be empty'),
+    body('full_name').optional().trim().isLength({ min: 2 }).withMessage('Full name must be at least 2 characters'),
     body('email').optional().isEmail().normalizeEmail(),
     body('phone').optional().trim(),
     body('department').optional().trim(),
@@ -102,7 +118,7 @@ router.get('/:id', async(req, res) => {
 });
 
 // POST /api/employees - Create new employee
-router.post('/', requireRole(['admin', 'manager']), validateEmployee, async(req, res) => {
+router.post('/', requireRole(['admin', 'manager']), validateEmployeeCreate, async(req, res) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -195,7 +211,7 @@ router.post('/', requireRole(['admin', 'manager']), validateEmployee, async(req,
 });
 
 // PUT /api/employees/:id - Update employee
-router.put('/:id', requireRole(['admin', 'manager']), validateEmployee, async(req, res) => {
+router.put('/:id', requireRole(['admin', 'manager']), validateEmployeeUpdate, async(req, res) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -219,25 +235,11 @@ router.put('/:id', requireRole(['admin', 'manager']), validateEmployee, async(re
             });
         }
 
-        const {
-            employee_id,
-            full_name,
-            email,
-            phone,
-            department,
-            position,
-            hire_date,
-            hourly_rate,
-            max_hours_per_week,
-            availability,
-            skills,
-            status
-        } = req.body;
-
         // Check if employee_id already exists (for different employee)
-        if (employee_id && employee_id !== existingEmployee.employee_id) {
+        if (req.body.employee_id && req.body.employee_id !== existingEmployee.employee_id) {
             const existingEmpId = await database.get(
-                'SELECT id FROM employees WHERE employee_id = ? AND id != ?', [employee_id, employeeId]
+                'SELECT id FROM employees WHERE employee_id = ? AND id != ?',
+                [req.body.employee_id, employeeId]
             );
 
             if (existingEmpId) {
@@ -249,9 +251,10 @@ router.put('/:id', requireRole(['admin', 'manager']), validateEmployee, async(re
         }
 
         // Check if email already exists (for different employee)
-        if (email && email !== existingEmployee.email) {
+        if (req.body.email && req.body.email !== existingEmployee.email) {
             const existingEmail = await database.get(
-                'SELECT id FROM employees WHERE email = ? AND id != ?', [email, employeeId]
+                'SELECT id FROM employees WHERE email = ? AND id != ?',
+                [req.body.email, employeeId]
             );
 
             if (existingEmail) {
@@ -262,21 +265,68 @@ router.put('/:id', requireRole(['admin', 'manager']), validateEmployee, async(re
             }
         }
 
-        // Stringify JSON fields
-        const availabilityJson = availability ? JSON.stringify(availability) : null;
-        const skillsJson = skills ? JSON.stringify(skills) : null;
+        // Build dynamic update query - only update provided fields
+        const updates = [];
+        const values = [];
+
+        if (req.body.employee_id !== undefined) {
+            updates.push('employee_id = ?');
+            values.push(req.body.employee_id);
+        }
+        if (req.body.full_name !== undefined) {
+            updates.push('full_name = ?');
+            values.push(req.body.full_name);
+        }
+        if (req.body.email !== undefined) {
+            updates.push('email = ?');
+            values.push(req.body.email);
+        }
+        if (req.body.phone !== undefined) {
+            updates.push('phone = ?');
+            values.push(req.body.phone);
+        }
+        if (req.body.department !== undefined) {
+            updates.push('department = ?');
+            values.push(req.body.department);
+        }
+        if (req.body.position !== undefined) {
+            updates.push('position = ?');
+            values.push(req.body.position);
+        }
+        if (req.body.hire_date !== undefined) {
+            updates.push('hire_date = ?');
+            values.push(req.body.hire_date);
+        }
+        if (req.body.hourly_rate !== undefined) {
+            updates.push('hourly_rate = ?');
+            values.push(req.body.hourly_rate);
+        }
+        if (req.body.max_hours_per_week !== undefined) {
+            updates.push('max_hours_per_week = ?');
+            values.push(req.body.max_hours_per_week);
+        }
+        if (req.body.availability !== undefined) {
+            updates.push('availability = ?');
+            values.push(JSON.stringify(req.body.availability));
+        }
+        if (req.body.skills !== undefined) {
+            updates.push('skills = ?');
+            values.push(JSON.stringify(req.body.skills));
+        }
+        if (req.body.status !== undefined) {
+            updates.push('status = ?');
+            values.push(req.body.status);
+        }
+
+        // Always update the updated_at timestamp
+        updates.push('updated_at = CURRENT_TIMESTAMP');
+
+        // Add employeeId to values array
+        values.push(employeeId);
 
         await database.run(
-            `UPDATE employees SET 
-        employee_id = ?, full_name = ?, email = ?, phone = ?, 
-        department = ?, position = ?, hire_date = ?, hourly_rate = ?, 
-        max_hours_per_week = ?, availability = ?, skills = ?, 
-        status = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?`, [
-                employee_id, full_name, email, phone, department, position,
-                hire_date, hourly_rate, max_hours_per_week, availabilityJson,
-                skillsJson, status, employeeId
-            ]
+            `UPDATE employees SET ${updates.join(', ')} WHERE id = ?`,
+            values
         );
 
         const updatedEmployee = await database.get(

@@ -73,7 +73,7 @@ export default function ScheduleList({ schedules, isLoading, onSelectSchedule })
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-700 text-lg">
-                      Week of {format(new Date(schedule.week_start_date), "MMM d, yyyy")}
+                      {schedule.name || `Week of ${format(new Date(schedule.start_date), "MMM d, yyyy")}`}
                     </h4>
                     <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
                       <div className="flex items-center gap-1">

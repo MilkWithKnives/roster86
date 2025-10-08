@@ -28,13 +28,13 @@ export default function Employees() {
 
     if (searchTerm) {
       filtered = filtered.filter(emp =>
-        emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        emp.email?.toLowerCase().includes(searchTerm.toLowerCase())
+        (emp.full_name || emp.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (emp.email || '').toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     if (roleFilter !== "all") {
-      filtered = filtered.filter(emp => emp.role === roleFilter);
+      filtered = filtered.filter(emp => (emp.position || emp.role) === roleFilter);
     }
 
     setFilteredEmployees(filtered);
@@ -76,7 +76,7 @@ export default function Employees() {
   const handleDeleteEmployee = async (employeeId) => {
     if (window.confirm("Are you sure you want to delete this employee?")) {
       try {
-        await Employee.update(employeeId, { active: false });
+        await Employee.update(employeeId, { status: 'inactive' });
         loadEmployees();
       } catch (error) {
         console.error("Error deactivating employee:", error);
@@ -102,7 +102,7 @@ export default function Employees() {
       </div>
 
       {/* Stats */}
-      <EmployeeStats employees={employees.filter(e => e.active)} />
+      <EmployeeStats employees={employees.filter(e => (e.status || e.active) === 'active' || (e.status || e.active) === true)} />
 
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-3 bg-transparent">

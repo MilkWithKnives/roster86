@@ -6,22 +6,24 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { X, User, Save } from "lucide-react";
 
-const roles = ["Manager", "Cashier", "Cook", "Server", "Bar", "Kitchen"];
-const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const positions = ["Manager", "Cashier", "Cook", "Server", "Bar", "Kitchen"];
+const departments = ["Operations", "Customer Service", "Kitchen", "Management"];
+const daysOfWeek = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
 export default function EmployeeForm({ employee, onSave, onCancel }) {
   const [formData, setFormData] = useState(employee || {
-    name: "",
-    role: "Server", // Changed default role from "FOH" to "Server"
-    max_hours_week: 40,
-    min_hours_week: 20,
-    preferred_days: [],
-    unavailable_times: [],
-    seniority: 1,
-    wage: 15.00,
-    phone: "",
+    employee_id: "",
+    full_name: "",
     email: "",
-    active: true
+    phone: "",
+    department: "Operations",
+    position: "Server",
+    hire_date: new Date().toISOString().split('T')[0],
+    hourly_rate: 15.00,
+    max_hours_per_week: 40,
+    availability: null,
+    skills: null,
+    status: "active"
   });
   const [isSaving, setIsSaving] = useState(false);
 
@@ -44,12 +46,21 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
     }));
   };
 
-  const handlePreferredDayToggle = (day) => {
+  const handleAvailabilityToggle = (day) => {
+    const availability = formData.availability || {};
+    const dayAvailability = availability[day] || { available: false };
+
     setFormData(prev => ({
       ...prev,
-      preferred_days: prev.preferred_days?.includes(day)
-        ? prev.preferred_days.filter(d => d !== day)
-        : [...(prev.preferred_days || []), day]
+      availability: {
+        ...(prev.availability || {}),
+        [day]: {
+          ...dayAvailability,
+          available: !dayAvailability.available,
+          start: dayAvailability.start || "09:00",
+          end: dayAvailability.end || "17:00"
+        }
+      }
     }));
   };
 
@@ -81,14 +92,14 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
           {/* Basic Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3">
-              <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="full_name" className="text-sm font-medium text-gray-700">
                 Full Name *
               </Label>
               <div className="neuro-input">
                 <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  id="full_name"
+                  value={formData.full_name}
+                  onChange={(e) => handleInputChange('full_name', e.target.value)}
                   className="border-0 bg-transparent focus:ring-0"
                   required
                 />
@@ -96,19 +107,56 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
             </div>
 
             <div className="space-y-3">
-              <Label htmlFor="role" className="text-sm font-medium text-gray-700">
-                Role *
+              <Label htmlFor="employee_id" className="text-sm font-medium text-gray-700">
+                Employee ID *
+              </Label>
+              <div className="neuro-input">
+                <Input
+                  id="employee_id"
+                  value={formData.employee_id}
+                  onChange={(e) => handleInputChange('employee_id', e.target.value)}
+                  className="border-0 bg-transparent focus:ring-0"
+                  placeholder="e.g., EMP001"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Position and Department */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <Label htmlFor="position" className="text-sm font-medium text-gray-700">
+                Position *
               </Label>
               <div className="neuro-input">
                 <select
-                  id="role"
-                  value={formData.role}
-                  onChange={(e) => handleInputChange('role', e.target.value)}
+                  id="position"
+                  value={formData.position}
+                  onChange={(e) => handleInputChange('position', e.target.value)}
                   className="w-full border-0 bg-transparent focus:ring-0"
                   required
                 >
-                  {roles.map(role => (
-                    <option key={role} value={role}>{role}</option>
+                  {positions.map(pos => (
+                    <option key={pos} value={pos}>{pos}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <Label htmlFor="department" className="text-sm font-medium text-gray-700">
+                Department
+              </Label>
+              <div className="neuro-input">
+                <select
+                  id="department"
+                  value={formData.department}
+                  onChange={(e) => handleInputChange('department', e.target.value)}
+                  className="w-full border-0 bg-transparent focus:ring-0"
+                >
+                  {departments.map(dept => (
+                    <option key={dept} value={dept}>{dept}</option>
                   ))}
                 </select>
               </div>
@@ -151,94 +199,77 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
           {/* Hours & Wage */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-3">
-              <Label htmlFor="min_hours" className="text-sm font-medium text-gray-700">
-                Min Hours/Week
+              <Label htmlFor="hire_date" className="text-sm font-medium text-gray-700">
+                Hire Date
               </Label>
               <div className="neuro-input">
                 <Input
-                  id="min_hours"
-                  type="number"
-                  min="0"
-                  max="168"
-                  value={formData.min_hours_week}
-                  onChange={(e) => handleInputChange('min_hours_week', parseInt(e.target.value))}
+                  id="hire_date"
+                  type="date"
+                  value={formData.hire_date}
+                  onChange={(e) => handleInputChange('hire_date', e.target.value)}
                   className="border-0 bg-transparent focus:ring-0"
                 />
               </div>
             </div>
 
             <div className="space-y-3">
-              <Label htmlFor="max_hours" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="max_hours_per_week" className="text-sm font-medium text-gray-700">
                 Max Hours/Week
               </Label>
               <div className="neuro-input">
                 <Input
-                  id="max_hours"
+                  id="max_hours_per_week"
                   type="number"
                   min="0"
                   max="168"
-                  value={formData.max_hours_week}
-                  onChange={(e) => handleInputChange('max_hours_week', parseInt(e.target.value))}
+                  value={formData.max_hours_per_week}
+                  onChange={(e) => handleInputChange('max_hours_per_week', parseInt(e.target.value))}
                   className="border-0 bg-transparent focus:ring-0"
                 />
               </div>
             </div>
 
             <div className="space-y-3">
-              <Label htmlFor="wage" className="text-sm font-medium text-gray-700">
-                Hourly Wage ($)
+              <Label htmlFor="hourly_rate" className="text-sm font-medium text-gray-700">
+                Hourly Rate ($)
               </Label>
               <div className="neuro-input">
                 <Input
-                  id="wage"
+                  id="hourly_rate"
                   type="number"
                   min="0"
                   step="0.25"
-                  value={formData.wage}
-                  onChange={(e) => handleInputChange('wage', parseFloat(e.target.value))}
+                  value={formData.hourly_rate}
+                  onChange={(e) => handleInputChange('hourly_rate', parseFloat(e.target.value))}
                   className="border-0 bg-transparent focus:ring-0"
                 />
               </div>
             </div>
           </div>
 
-          {/* Seniority */}
-          <div className="space-y-3">
-            <Label htmlFor="seniority" className="text-sm font-medium text-gray-700">
-              Seniority Level (1-10)
-            </Label>
-            <div className="neuro-input">
-              <Input
-                id="seniority"
-                type="number"
-                min="1"
-                max="10"
-                value={formData.seniority}
-                onChange={(e) => handleInputChange('seniority', parseInt(e.target.value))}
-                className="border-0 bg-transparent focus:ring-0"
-              />
-            </div>
-          </div>
-
-          {/* Preferred Days */}
+          {/* Availability */}
           <div className="space-y-3">
             <Label className="text-sm font-medium text-gray-700">
-              Preferred Working Days
+              Availability
             </Label>
             <div className="flex flex-wrap gap-2">
-              {daysOfWeek.map(day => (
-                <div
-                  key={day}
-                  className={`cursor-pointer px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    formData.preferred_days?.includes(day)
-                      ? 'neuro-badge bg-indigo-400 text-white'
-                      : 'neuro-button text-gray-600'
-                  }`}
-                  onClick={() => handlePreferredDayToggle(day)}
-                >
-                  {day}
-                </div>
-              ))}
+              {daysOfWeek.map(day => {
+                const isAvailable = formData.availability?.[day]?.available;
+                return (
+                  <div
+                    key={day}
+                    className={`cursor-pointer px-4 py-2 rounded-lg text-sm font-medium transition-all capitalize ${
+                      isAvailable
+                        ? 'neuro-badge bg-indigo-400 text-white'
+                        : 'neuro-button text-gray-600'
+                    }`}
+                    onClick={() => handleAvailabilityToggle(day)}
+                  >
+                    {day}
+                  </div>
+                );
+              })}
             </div>
           </div>
 

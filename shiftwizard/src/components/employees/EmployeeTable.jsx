@@ -58,13 +58,13 @@ export default function EmployeeTable({ employees, isLoading, onEdit, onDelete }
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="neuro-icon w-14 h-14 flex items-center justify-center text-lg font-bold text-white">
-                  {employee.name.charAt(0).toUpperCase()}
+                  {(employee.full_name || employee.name || 'N').charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h4 className="font-semibold text-gray-700">{employee.name}</h4>
-                    <div className={`neuro-badge px-3 py-1 text-xs font-medium ${roleColors[employee.role]}`}>
-                      {employee.role}
+                    <h4 className="font-semibold text-gray-700">{employee.full_name || employee.name}</h4>
+                    <div className={`neuro-badge px-3 py-1 text-xs font-medium ${roleColors[employee.position || employee.role] || 'bg-gray-400 text-white'}`}>
+                      {employee.position || employee.role}
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-500">
@@ -77,8 +77,8 @@ export default function EmployeeTable({ employees, isLoading, onEdit, onDelete }
                       {employee.email || 'No email'}
                     </div>
                     <div>
-                      <span className="font-medium">{employee.min_hours_week}-{employee.max_hours_week}h/week</span>
-                      {employee.wage && <span className="ml-2">${employee.wage}/hr</span>}
+                      <span className="font-medium">Up to {employee.max_hours_per_week || employee.max_hours_week || 40}h/week</span>
+                      {(employee.hourly_rate || employee.wage) && <span className="ml-2">${employee.hourly_rate || employee.wage}/hr</span>}
                     </div>
                   </div>
                   {employee.preferred_days && employee.preferred_days.length > 0 && (

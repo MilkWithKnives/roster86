@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { User, AppSettings } from '@/api/entities';
 import { Input } from '@/components/ui/input';
@@ -7,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle, CheckCircle, Save } from 'lucide-react';
-import { debounce } from 'lodash';
+import { debounce } from '@/utils/debounce';
 
 const timeZones = [
   'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles',
@@ -29,21 +28,18 @@ export default function SettingsPage() {
         setUser(currentUser);
 
         if (currentUser.role === 'admin') {
-          const existingSettings = await AppSettings.list();
-          if (existingSettings.length > 0) {
-            setSettings(existingSettings[0]);
-            settingsId.current = existingSettings[0].id;
-          } else {
-            // If no settings exist, create with defaults
-            const defaultSettings = {
-              organization_name: "Shift Wizard Inc.",
-              time_zone: "America/New_York",
-              schedule_start_day: "Monday",
-              standard_shift_duration: 8,
-              max_weekly_hours: 40
-            };
-            setSettings(defaultSettings);
-          }
+          const existingSettings = await AppSettings.get();
+
+          // Set defaults if settings don't exist
+          const defaultSettings = {
+            organization_name: "Shift Wizard Inc.",
+            time_zone: "America/New_York",
+            schedule_start_day: "Monday",
+            standard_shift_duration: 8,
+            max_weekly_hours: 40
+          };
+
+          setSettings({ ...defaultSettings, ...existingSettings });
         }
       } catch (error) {
         console.error("Error initializing settings:", error);
@@ -58,12 +54,7 @@ export default function SettingsPage() {
     () => debounce(async (newSettings) => {
       setIsSaving(true);
       try {
-        if (settingsId.current) {
-          await AppSettings.update(settingsId.current, newSettings);
-        } else {
-          const created = await AppSettings.create(newSettings);
-          settingsId.current = created.id;
-        }
+        await AppSettings.update(newSettings);
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 2000);
       } catch (error) {
@@ -84,16 +75,16 @@ export default function SettingsPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-10 w-1/4" />
+        <Skeleton className="w-1/4 h-10" />
         <Card>
           <CardHeader>
-            <Skeleton className="h-6 w-1/3" />
-            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="w-1/3 h-6" />
+            <Skeleton className="w-2/3 h-4" />
           </CardHeader>
           <CardContent className="space-y-4">
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
+            <Skeleton className="w-full h-8" />
+            <Skeleton className="w-full h-8" />
+            <Skeleton className="w-full h-8" />
           </CardContent>
         </Card>
       </div>
@@ -102,8 +93,8 @@ export default function SettingsPage() {
 
   if (user?.role !== 'admin') {
     return (
-      <div className="glass-card p-8 rounded-xl text-center">
-        <AlertCircle className="w-12 h-12 mx-auto text-red-500 mb-4" />
+      <div className="p-8 text-center glass-card rounded-xl">
+        <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
         <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Access Denied</h2>
         <p style={{ color: 'var(--text-secondary)' }}>You must be an administrator to access this page.</p>
       </div>
@@ -111,7 +102,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
@@ -121,7 +112,7 @@ export default function SettingsPage() {
             Manage organization-wide settings and preferences.
           </p>
         </div>
-        <div className="flex items-center gap-2 h-8">
+        <div className="flex items-center h-8 gap-2">
           {isSaving && (
             <>
               <Save className="w-4 h-4 animate-pulse" />
@@ -143,7 +134,7 @@ export default function SettingsPage() {
           <CardDescription>General settings for your company.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="org-name">Organization Name</Label>
               <Input
@@ -179,7 +170,7 @@ export default function SettingsPage() {
           <CardDescription>Default parameters for generating new schedules.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="start-day">Schedule Start Day</Label>
               <Select
