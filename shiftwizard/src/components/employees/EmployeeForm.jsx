@@ -31,7 +31,16 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
     e.preventDefault();
     setIsSaving(true);
     try {
-      await onSave(formData);
+      // Clean up data - remove null values that would fail validation
+      const cleanData = { ...formData };
+      if (cleanData.availability === null) {
+        delete cleanData.availability;
+      }
+      if (cleanData.skills === null) {
+        delete cleanData.skills;
+      }
+
+      await onSave(cleanData);
     } catch (error) {
       console.error("Error saving employee:", error);
     } finally {
@@ -65,8 +74,8 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="neuro-card max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200">
         <div className="p-6 border-b border-gray-300">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
