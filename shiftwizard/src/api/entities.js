@@ -130,6 +130,18 @@ export const Assignment = {
         return response.data;
     },
 
+    async filter(filters) {
+        const params = new URLSearchParams();
+        Object.entries(filters).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                params.append(key, value);
+            }
+        });
+
+        const response = await apiClient.get(`/assignments?${params.toString()}`);
+        return response.data;
+    },
+
     async findById(id) {
         const response = await apiClient.get(`/assignments/${id}`);
         return response.data;

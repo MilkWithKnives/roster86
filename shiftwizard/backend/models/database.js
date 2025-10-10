@@ -22,6 +22,9 @@ class Database {
         // Create tables first
         await this.createTables();
 
+        // Run migrations for existing databases
+        await this.runMigrations();
+
         // Then create indexes
         await this.createIndexes();
     }
@@ -86,6 +89,9 @@ class Database {
         end_date DATE NOT NULL,
         status TEXT DEFAULT 'draft' CHECK(status IN ('draft', 'published', 'archived')),
         description TEXT,
+        total_hours DECIMAL(10,2) DEFAULT 0,
+        coverage_percentage INTEGER DEFAULT 0,
+        fairness_score INTEGER DEFAULT 0,
         created_by INTEGER,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -144,6 +150,33 @@ class Database {
         }
 
         console.log('✅ Database indexes created successfully');
+    }
+
+    async runMigrations() {
+        // Helper function to check if column exists
+        const columnExists = async (tableName, columnName) => {
+            const result = await this.all(`PRAGMA table_info(${tableName})`);
+            return result.some(col => col.name === columnName);
+        };
+
+        // Migration: Add metrics columns to schedules table
+        const schedulesExists = await this.get("SELECT name FROM sqlite_master WHERE type='table' AND name='schedules'");
+        if (schedulesExists) {
+            if (!await columnExists('schedules', 'total_hours')) {
+                await this.run('ALTER TABLE schedules ADD COLUMN total_hours DECIMAL(10,2) DEFAULT 0');
+                console.log('✅ Added total_hours column to schedules table');
+            }
+            if (!await columnExists('schedules', 'coverage_percentage')) {
+                await this.run('ALTER TABLE schedules ADD COLUMN coverage_percentage INTEGER DEFAULT 0');
+                console.log('✅ Added coverage_percentage column to schedules table');
+            }
+            if (!await columnExists('schedules', 'fairness_score')) {
+                await this.run('ALTER TABLE schedules ADD COLUMN fairness_score INTEGER DEFAULT 0');
+                console.log('✅ Added fairness_score column to schedules table');
+            }
+        }
+
+        console.log('✅ Database migrations completed successfully');
     }
 
     // Generic query methods

@@ -167,22 +167,32 @@ export default function Schedules() {
       for (let i = 0; i < staffToAssign; i++) {
         const employee = employeesToUse[i];
         const hours = calculateHours(template.start_time, template.end_time);
-        
+
+        // Calculate the actual date for this day of the week
+        const startDate = new Date(weekStart);
+        const dayMap = { 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3, 'Thursday': 4, 'Friday': 5, 'Saturday': 6, 'Sunday': 0 };
+        const targetDay = dayMap[template.day];
+        const currentDay = startDate.getDay();
+        const daysToAdd = (targetDay - currentDay + 7) % 7;
+        const assignmentDate = new Date(startDate);
+        assignmentDate.setDate(startDate.getDate() + daysToAdd);
+        const dateString = assignmentDate.toISOString().split('T')[0];
+
         try {
           const assignment = await Assignment.create({
             schedule_id: scheduleId,
             employee_id: employee.id,
             shift_template_id: template.id,
-            day: template.day,
+            date: dateString,
             start_time: template.start_time,
             end_time: template.end_time,
-            location: template.location || '', // Ensure location is always a string
-            hours: hours,
-            status: "scheduled"
+            break_duration: template.break_duration || 0,
+            status: "scheduled",
+            notes: template.location ? `Location: ${template.location}` : ''
           });
-          
+
           assignments.push(assignment);
-          console.log(`✅ Created assignment: ${employee.name} on ${template.day} ${template.start_time}-${template.end_time} (${hours}h)`);
+          console.log(`✅ Created assignment: ${employee.name} on ${dateString} ${template.start_time}-${template.end_time} (${hours}h)`);
         } catch (error) {
           console.error(`❌ Failed to create assignment for ${employee.name} for template "${template.name}":`, error);
         }
@@ -246,7 +256,7 @@ export default function Schedules() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
-            {currentSchedule ? `Interactive Schedule - Week of ${currentSchedule.week_start_date}` : 'Schedules'}
+            {currentSchedule ? `Interactive Schedule - Week of ${currentSchedule.start_date}` : 'Schedules'}
           </h1>
           <p className="mt-1" style={{ color: 'var(--text-secondary)' }}>
             {currentSchedule ? 'Drag and drop to manage shifts in real-time' : 'Manage weekly staff schedules'}
