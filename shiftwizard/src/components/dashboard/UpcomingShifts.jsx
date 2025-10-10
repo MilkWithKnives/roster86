@@ -1,6 +1,3 @@
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Clock, User, MapPin } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 

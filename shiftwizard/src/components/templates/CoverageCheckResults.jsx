@@ -1,4 +1,3 @@
-import React from "react";
 import { X, AlertTriangle, CheckCircle, ShieldAlert } from "lucide-react";
 
 const issueConfig = {

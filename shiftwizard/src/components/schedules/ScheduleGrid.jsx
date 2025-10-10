@@ -1,16 +1,8 @@
-import React from "react";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, Users, Clock, MapPin } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Assignment } from "@/api/entities";
 
 import InteractiveScheduleGrid from "./InteractiveScheduleGrid";
 
-const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-
 export default function ScheduleGrid({ schedule, assignments, employees, templates, onUpdateAssignment }) {
-  const getEmployeeById = (id) => employees.find(emp => emp.id === id);
-
   const handleUpdateAssignment = async (assignmentId, updatedData) => {
     try {
       // Update assignment in database

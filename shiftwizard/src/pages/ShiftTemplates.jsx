@@ -1,8 +1,7 @@
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { ShiftTemplate } from "@/api/entities";
-import { Button } from "@/components/ui/button";
-import { Plus, Clock, AlertTriangle } from "lucide-react";
+import { Plus, AlertTriangle } from "lucide-react";
 import { runCoverageCheck } from "../components/utils/coverageChecker";
 
 import TemplateGrid from "../components/templates/TemplateGrid";
@@ -88,12 +87,13 @@ export default function ShiftTemplates() {
   };
   
   const handleDuplicateTemplate = async (template) => {
+    // eslint-disable-next-line no-unused-vars
     const { id, created_date, updated_date, created_by, ...dupeData } = template;
     const duplicatedTemplate = {
       ...dupeData,
       name: `${template.name} (Copy)`,
     };
-    
+
     setEditingTemplate(duplicatedTemplate);
     setShowForm(true);
   };

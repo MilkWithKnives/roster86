@@ -1,9 +1,8 @@
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Employee } from "@/api/entities";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Filter } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 
 import EmployeeTable from "../components/employees/EmployeeTable";
 import EmployeeForm from "../components/employees/EmployeeForm";

@@ -1,10 +1,9 @@
 
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, Wand2, X, AlertTriangle, CheckCircle } from "lucide-react";
+import { Wand2, X, AlertTriangle } from "lucide-react";
 
 export default function ScheduleGenerator({ employees, templates, onGenerate, onCancel }) {
   const [formData, setFormData] = useState({
@@ -35,23 +34,6 @@ export default function ScheduleGenerator({ employees, templates, onGenerate, on
     return Math.ceil((((date - start) / 86400000) + start.getDay() + 1) / 7);
   };
 
-  // Fix the template counting to be more accurate
-  const getApplicableTemplatesCount = () => {
-    if (!formData.week_start_date) return 0;
-    
-    const startDate = new Date(formData.week_start_date);
-    const weekNumber = getWeekNumber(startDate);
-    
-    return templates.filter(template => {
-      if (template.recurrence === "Weekly") return true;
-      if (template.recurrence === "Biweekly") {
-        // Show biweekly templates that will apply this week
-        return weekNumber % 2 === 1;
-      }
-      if (template.recurrence === "One-time") return false; // Don't auto-apply one-time templates
-      return false;
-    }).length;
-  };
 
   const getBiweeklyWeekType = (weekNumber) => {
     return weekNumber % 2 === 1 ? "Odd Week" : "Even Week";

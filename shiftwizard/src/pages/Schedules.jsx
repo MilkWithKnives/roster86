@@ -1,8 +1,7 @@
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Schedule, Assignment, Employee, ShiftTemplate } from "@/api/entities";
-import { Button } from "@/components/ui/button";
-import { Calendar, Plus, Download, AlertCircle } from "lucide-react";
+import { Plus, AlertCircle } from "lucide-react";
 
 import ScheduleGrid from "../components/schedules/ScheduleGrid";
 import ScheduleGenerator from "../components/schedules/ScheduleGenerator";
@@ -87,7 +86,7 @@ export default function Schedules() {
       // Calculate schedule metrics
       const totalHours = assignments.reduce((sum, a) => sum + (a.hours || 0), 0);
       const coverage = calculateCoverage(assignments, templates);
-      const fairness = calculateFairness(assignments, employees);
+      const fairness = calculateFairness(assignments);
 
       // Update schedule with metrics
       await Schedule.update(newSchedule.id, {
@@ -235,18 +234,18 @@ export default function Schedules() {
     return requiredShifts > 0 ? Math.round((assignments.length / requiredShifts) * 100) : 0;
   };
 
-  const calculateFairness = (assignments, employees) => {
+  const calculateFairness = (assignments) => {
     const employeeHours = {};
     assignments.forEach(a => {
       employeeHours[a.employee_id] = (employeeHours[a.employee_id] || 0) + (a.hours || 0);
     });
-    
+
     const hours = Object.values(employeeHours);
     if (hours.length === 0) return 100;
-    
+
     const avg = hours.reduce((sum, h) => sum + h, 0) / hours.length;
     const variance = hours.reduce((sum, h) => sum + Math.pow(h - avg, 2), 0) / hours.length;
-    
+
     return Math.max(0, Math.round(100 - variance));
   };
 

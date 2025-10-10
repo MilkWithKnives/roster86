@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Check, ArrowRight } from 'lucide-react';
+import { useState } from 'react';
+import { Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
@@ -122,7 +122,7 @@ const plans = {
   ],
 };
 
-const PricingCard = ({ plan, billingCycle }) => {
+const PricingCard = ({ plan }) => {
   return (
     <div className={`premium-card p-8 rounded-3xl h-full flex flex-col relative ${plan.popular ? 'border-2 border-purple-400 shadow-strong' : ''}`}>
       {plan.popular && (
@@ -207,7 +207,7 @@ export default function PricingPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-stretch">
           {plans[billingCycle].map((plan, index) => (
             <div key={index} className={plan.popular ? 'lg:scale-105' : ''}>
-              <PricingCard plan={plan} billingCycle={billingCycle} />
+              <PricingCard plan={plan} />
             </div>
           ))}
         </div>

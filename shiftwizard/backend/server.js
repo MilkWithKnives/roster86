@@ -51,6 +51,7 @@ app.use('/api/app-settings', appSettingsRoutes);
 app.use('/api', integrationRoutes);
 
 // Error handling middleware
+// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
     console.error('Error:', err);
 

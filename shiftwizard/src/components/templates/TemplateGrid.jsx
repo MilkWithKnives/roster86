@@ -1,13 +1,8 @@
-
-import React from "react";
 import { Switch } from "@/components/ui/switch";
 import { Clock, Users, Zap, Edit, Trash2, Copy, AlertTriangle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Tooltip,
-  TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
 } from "@/components/ui/tooltip";
 
 const roleColors = {

@@ -1,5 +1,3 @@
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Calendar, Clock, TrendingUp } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -72,7 +70,7 @@ export default function StatsOverview({ stats, isLoading }) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {cardConfigs.map((config, index) => (
+      {cardConfigs.map((config) => (
         <StatCard
           key={config.title}
           {...config}

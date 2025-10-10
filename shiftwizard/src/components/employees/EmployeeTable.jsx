@@ -1,7 +1,3 @@
-
-import React from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Edit, Trash2, Phone, Mail, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 

@@ -1,9 +1,7 @@
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { X, User, Save } from "lucide-react";
 
 const positions = ["Manager", "Cashier", "Cook", "Server", "Bar", "Kitchen"];

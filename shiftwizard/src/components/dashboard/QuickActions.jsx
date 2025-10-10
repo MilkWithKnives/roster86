@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Users, Clock, Calendar, Zap, ArrowRight, User } from "lucide-react";
@@ -49,7 +48,7 @@ export default function QuickActions() {
         </div>
       </div>
       <div className="p-6 space-y-4">
-        {actions.map((action, index) => (
+        {actions.map((action) => (
           <Link key={action.title} to={action.link}>
             <div className="premium-button p-5 rounded-2xl w-full transition-all duration-300 hover:shadow-lg group relative overflow-hidden">
               <div className="flex items-center gap-4 relative z-10">

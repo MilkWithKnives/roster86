@@ -1,5 +1,3 @@
-import React from "react";
-import { Badge } from "@/components/ui/badge";
 import { Calendar, Users, Clock, Eye, TrendingUp } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";

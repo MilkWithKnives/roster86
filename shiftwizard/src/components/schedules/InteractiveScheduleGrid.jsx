@@ -1,9 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Calendar, Users, Clock, MapPin, Plus, Trash2 } from "lucide-react";
-import { Assignment } from "@/api/entities";
 
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
@@ -21,15 +18,15 @@ const generateTimeSlots = () => {
 
 const timeSlots = generateTimeSlots();
 
-export default function InteractiveScheduleGrid({ 
-  schedule, 
-  assignments, 
-  employees, 
-  templates, 
+export default function InteractiveScheduleGrid({
+  schedule,
+  assignments,
+  employees,
   onUpdateAssignment,
   onCreateAssignment,
-  onDeleteAssignment 
+  onDeleteAssignment
 }) {
+  // eslint-disable-next-line no-unused-vars
   const [draggedItem, setDraggedItem] = useState(null);
   const [dropTargets, setDropTargets] = useState(new Set());
   const [isProcessing, setIsProcessing] = useState(false);

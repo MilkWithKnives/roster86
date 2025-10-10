@@ -36,7 +36,7 @@ const upload = multer({
 // POST /api/ai/llm - LLM Integration
 router.post('/ai/llm', authenticateToken, async(req, res) => {
     try {
-        const { prompt, options = {} } = req.body;
+        const { prompt } = req.body;
 
         // Mock LLM response - replace with actual LLM service
         const mockResponse = {
@@ -56,7 +56,7 @@ router.post('/ai/llm', authenticateToken, async(req, res) => {
 // POST /api/email/send - Email Integration
 router.post('/email/send', authenticateToken, async(req, res) => {
     try {
-        const { to, subject, body, html } = req.body;
+        const { to, subject, body } = req.body;
 
         // Mock email response - replace with actual email service (SendGrid, Nodemailer, etc.)
         const mockResponse = {
@@ -103,7 +103,7 @@ router.post('/files/upload', authenticateToken, upload.single('file'), async(req
 // POST /api/ai/generate-image - Image Generation
 router.post('/ai/generate-image', authenticateToken, async(req, res) => {
     try {
-        const { prompt, options = {} } = req.body;
+        const { prompt } = req.body;
 
         // Mock image generation response - replace with actual service (DALL-E, Midjourney, etc.)
         const mockResponse = {
@@ -124,7 +124,7 @@ router.post('/ai/generate-image', authenticateToken, async(req, res) => {
 // POST /api/files/extract-data - Extract Data from File
 router.post('/files/extract-data', authenticateToken, async(req, res) => {
     try {
-        const { fileUrl, options = {} } = req.body;
+        const { fileUrl } = req.body;
 
         // Mock data extraction response - replace with actual OCR/document parsing service
         const mockResponse = {
@@ -151,7 +151,7 @@ router.post('/files/extract-data', authenticateToken, async(req, res) => {
 // POST /api/files/signed-url - Create Signed URL
 router.post('/files/signed-url', authenticateToken, async(req, res) => {
     try {
-        const { fileName, contentType, options = {} } = req.body;
+        const { fileName } = req.body;
 
         // Mock signed URL response - replace with actual cloud storage service (AWS S3, etc.)
         const mockResponse = {

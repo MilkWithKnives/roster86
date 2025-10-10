@@ -1,19 +1,11 @@
 
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
+import { useState, useEffect } from "react";
 import { Employee, Schedule, Assignment, ShiftTemplate } from "@/api/entities";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Users, 
-  Calendar, 
-  Clock, 
-  TrendingUp,
-  Plus,
+import {
   AlertCircle,
   CheckCircle,
-  Timer
+  TrendingUp
 } from "lucide-react";
 
 import StatsOverview from "../components/dashboard/StatsOverview";

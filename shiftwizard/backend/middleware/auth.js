@@ -102,7 +102,7 @@ const optionalAuth = async(req, res, next) => {
             'SELECT id, email, full_name, role FROM users WHERE id = ?', [decoded.userId]
         );
         req.user = user || null;
-    } catch (error) {
+    } catch {
         req.user = null;
     }
 
