@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd shiftwizard && npm install && npm run build",
+  "outputDirectory": "shiftwizard/dist",
+  "installCommand": "cd shiftwizard && npm install",
+  "framework": "vite"
+}
