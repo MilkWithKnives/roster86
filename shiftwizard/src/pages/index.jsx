@@ -8,6 +8,7 @@ import Pricing from "./Pricing";
 import Profile from "./Profile";
 import Login from "./Login";
 import Register from "./Register";
+import Landing from "./Landing";
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
@@ -39,9 +40,20 @@ function _getCurrentPage(url) {
 function PagesContent() {
     const location = useLocation();
     const currentPage = _getCurrentPage(location.pathname);
-    
-    const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
+    const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+    const isLandingPage = location.pathname === '/';
+
+    // Landing page - no layout or auth required
+    if (isLandingPage) {
+        return (
+            <Routes>
+                <Route path="/" element={<Landing />} />
+            </Routes>
+        );
+    }
+
+    // Auth pages - no layout
     if (isAuthPage) {
         return (
             <Routes>
@@ -50,11 +62,11 @@ function PagesContent() {
             </Routes>
         );
     }
-    
+
+    // Protected pages - with layout
     return (
         <Layout currentPageName={currentPage}>
-            <Routes>            
-                <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Routes>
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/employees" element={<ProtectedRoute><Employees /></ProtectedRoute>} />
                 <Route path="/shifttemplates" element={<ProtectedRoute><ShiftTemplates /></ProtectedRoute>} />
@@ -62,8 +74,6 @@ function PagesContent() {
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                 <Route path="/pricing" element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
             </Routes>
         </Layout>
     );
