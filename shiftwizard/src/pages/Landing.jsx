@@ -13,7 +13,7 @@ export default function Landing() {
           <div className="text-2xl font-bold text-gray-900">ROSTER86</div>
           <nav className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-gray-600 hover:text-gray-900">Features</a>
-            <a href="#pricing" onClick={(e) => { e.preventDefault(); navigate('/pricing'); }} className="text-gray-600 hover:text-gray-900">Pricing</a>
+            <a href="#pricing" onClick={(e) => { e.preventDefault(); navigate('/pricing-public'); }} className="text-gray-600 hover:text-gray-900">Pricing</a>
             <a href="#contact" className="text-gray-600 hover:text-gray-900">Contact</a>
           </nav>
           <div className="flex items-center gap-4">
@@ -42,7 +42,7 @@ export default function Landing() {
               <button onClick={() => navigate('/register')} className="bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-gray-800 font-medium">
                 Try it for free
               </button>
-              <button onClick={() => navigate('/pricing')} className="bg-white text-gray-900 px-6 py-3 rounded-lg border border-gray-300 hover:bg-gray-50 font-medium">
+              <button onClick={() => navigate('/pricing-public')} className="bg-white text-gray-900 px-6 py-3 rounded-lg border border-gray-300 hover:bg-gray-50 font-medium">
                 Check plans
               </button>
             </div>

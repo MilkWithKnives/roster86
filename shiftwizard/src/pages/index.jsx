@@ -5,6 +5,7 @@ import ShiftTemplates from "./ShiftTemplates";
 import Schedules from "./Schedules";
 import Settings from "./Settings";
 import Pricing from "./Pricing";
+import PricingPublic from "./PricingPublic";
 import Profile from "./Profile";
 import Login from "./Login";
 import Register from "./Register";
@@ -43,12 +44,22 @@ function PagesContent() {
 
     const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
     const isLandingPage = location.pathname === '/';
+    const isPricingPublicPage = location.pathname === '/pricing-public';
 
     // Landing page - no layout or auth required
     if (isLandingPage) {
         return (
             <Routes>
                 <Route path="/" element={<Landing />} />
+            </Routes>
+        );
+    }
+
+    // Pricing public page - no layout or auth required
+    if (isPricingPublicPage) {
+        return (
+            <Routes>
+                <Route path="/pricing-public" element={<PricingPublic />} />
             </Routes>
         );
     }
