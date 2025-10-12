@@ -13,9 +13,15 @@ const scheduleRoutes = require('./routes/schedules');
 const assignmentRoutes = require('./routes/assignments');
 const appSettingsRoutes = require('./routes/app-settings');
 const integrationRoutes = require('./routes/integrations');
+const paymentRoutes = require('./routes/payments');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// ⚠️ IMPORTANT: Stripe webhooks must be registered BEFORE express.json() middleware
+// because Stripe needs the raw request body to verify signatures
+const webhookRoutes = require('./routes/webhooks');
+app.use('/api/webhooks', webhookRoutes);
 
 // Rate limiting
 const limiter = rateLimit({
@@ -70,6 +76,7 @@ app.use('/api/shift-templates', shiftTemplateRoutes);
 app.use('/api/schedules', scheduleRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/app-settings', appSettingsRoutes);
+app.use('/api/payments', paymentRoutes);
 app.use('/api', integrationRoutes);
 
 // Error handling middleware

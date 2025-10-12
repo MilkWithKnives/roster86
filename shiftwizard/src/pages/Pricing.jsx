@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { createCheckoutSession } from '@/api/payments';
+import { useToast } from '@/components/ui/use-toast';
 
 const plans = {
   monthly: [
@@ -122,7 +124,32 @@ const plans = {
   ],
 };
 
-const PricingCard = ({ plan }) => {
+const PricingCard = ({ plan, onSelectPlan }) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleClick = async () => {
+    if (plan.planId === 'free') {
+      // Free plan - just go to dashboard
+      window.location.href = createPageUrl('Dashboard');
+      return;
+    }
+
+    if (plan.planId === 'enterprise') {
+      // Enterprise - contact sales (could open a modal or redirect)
+      window.location.href = 'mailto:sales@roster86.com?subject=Enterprise Plan Inquiry';
+      return;
+    }
+
+    // Paid plans - initiate Stripe Checkout
+    setLoading(true);
+    try {
+      await onSelectPlan(plan);
+    } catch (error) {
+      console.error('Payment error:', error);
+      setLoading(false);
+    }
+  };
+
   return (
     <div className={`premium-card p-8 rounded-3xl h-full flex flex-col relative ${plan.popular ? 'border-2 border-purple-400 shadow-strong' : ''}`}>
       {plan.popular && (
@@ -135,7 +162,7 @@ const PricingCard = ({ plan }) => {
       <div className="flex-grow">
         <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{plan.name}</h3>
         <p className="text-sm mb-6" style={{ color: 'var(--text-tertiary)' }}>{plan.description}</p>
-        
+
         <div className="flex items-baseline gap-2 mb-8">
           <span className="text-4xl font-extrabold" style={{ color: 'var(--text-primary)' }}>{plan.price}</span>
           {plan.price !== "Custom" && plan.price !== "$0" && (
@@ -156,11 +183,13 @@ const PricingCard = ({ plan }) => {
       </div>
 
       <div className="mt-10">
-        <Link to={createPageUrl(`Dashboard?plan=${plan.planId}`)} className="w-full">
-          <button className={`w-full py-3 px-6 rounded-lg font-semibold transition-transform duration-300 ${plan.popular ? 'gradient-primary text-white hover:scale-105' : 'modern-button hover:bg-white/20'}`}>
-            {plan.cta}
-          </button>
-        </Link>
+        <button
+          onClick={handleClick}
+          disabled={loading}
+          className={`w-full py-3 px-6 rounded-lg font-semibold transition-transform duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${plan.popular ? 'gradient-primary text-white hover:scale-105' : 'modern-button hover:bg-white/20'}`}
+        >
+          {loading ? 'Loading...' : plan.cta}
+        </button>
       </div>
     </div>
   );
@@ -168,6 +197,46 @@ const PricingCard = ({ plan }) => {
 
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState('monthly');
+  const { toast } = useToast();
+
+  const handleSelectPlan = async (plan) => {
+    try {
+      // IMPORTANT: Replace these with your actual Stripe Price IDs from your Stripe Dashboard
+      // These are placeholder IDs - you need to create products in Stripe and get real Price IDs
+      const stripePriceIds = {
+        'pro': 'price_1234567890',  // Replace with your Stripe Price ID for Pro Monthly
+        'pro-yearly': 'price_0987654321',  // Replace with your Stripe Price ID for Pro Yearly
+        'premium': 'price_1111111111',  // Replace with your Stripe Price ID for Premium Monthly
+        'premium-yearly': 'price_2222222222',  // Replace with your Stripe Price ID for Premium Yearly
+      };
+
+      const priceId = stripePriceIds[plan.planId];
+
+      if (!priceId) {
+        toast({
+          title: 'Configuration Error',
+          description: 'Stripe Price ID not configured for this plan. Please contact support.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      // Create checkout session
+      const { url } = await createCheckoutSession(priceId, plan.name);
+
+      // Redirect to Stripe Checkout
+      if (url) {
+        window.location.href = url;
+      }
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      toast({
+        title: 'Payment Error',
+        description: error.message || 'Failed to initiate checkout. Please try again.',
+        variant: 'destructive'
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen w-full p-4 md:p-8" style={{ background: 'var(--bg-secondary)' }}>
@@ -207,7 +276,7 @@ export default function PricingPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-stretch">
           {plans[billingCycle].map((plan, index) => (
             <div key={index} className={plan.popular ? 'lg:scale-105' : ''}>
-              <PricingCard plan={plan} />
+              <PricingCard plan={plan} onSelectPlan={handleSelectPlan} />
             </div>
           ))}
         </div>

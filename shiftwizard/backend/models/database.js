@@ -176,7 +176,69 @@ class Database {
             }
         }
 
+        // Migration: Add Stripe columns to users table
+        const usersExists = await this.get("SELECT name FROM sqlite_master WHERE type='table' AND name='users'");
+        if (usersExists) {
+            if (!await columnExists('users', 'stripe_customer_id')) {
+                await this.run('ALTER TABLE users ADD COLUMN stripe_customer_id TEXT UNIQUE');
+                console.log('✅ Added stripe_customer_id column to users table');
+            }
+            if (!await columnExists('users', 'subscription_id')) {
+                await this.run('ALTER TABLE users ADD COLUMN subscription_id TEXT');
+                console.log('✅ Added subscription_id column to users table');
+            }
+            if (!await columnExists('users', 'subscription_status')) {
+                await this.run('ALTER TABLE users ADD COLUMN subscription_status TEXT DEFAULT \'free\'');
+                console.log('✅ Added subscription_status column to users table');
+            }
+            if (!await columnExists('users', 'subscription_plan')) {
+                await this.run('ALTER TABLE users ADD COLUMN subscription_plan TEXT DEFAULT \'free\'');
+                console.log('✅ Added subscription_plan column to users table');
+            }
+        }
+
         console.log('✅ Database migrations completed successfully');
+    }
+
+    // ============================================
+    // User Methods (including Stripe support)
+    // ============================================
+
+    async getUserById(userId) {
+        return this.get('SELECT * FROM users WHERE id = ?', [userId]);
+    }
+
+    async getUserByEmail(email) {
+        return this.get('SELECT * FROM users WHERE email = ?', [email]);
+    }
+
+    async getUserByStripeCustomerId(stripeCustomerId) {
+        return this.get('SELECT * FROM users WHERE stripe_customer_id = ?', [stripeCustomerId]);
+    }
+
+    async updateUserStripeCustomerId(userId, stripeCustomerId) {
+        return this.run(
+            'UPDATE users SET stripe_customer_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            [stripeCustomerId, userId]
+        );
+    }
+
+    async updateUserSubscription(userId, subscriptionData) {
+        const {
+            subscriptionId,
+            status,
+            planName
+        } = subscriptionData;
+
+        return this.run(
+            `UPDATE users
+             SET subscription_id = ?,
+                 subscription_status = ?,
+                 subscription_plan = ?,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = ?`,
+            [subscriptionId, status, planName, userId]
+        );
     }
 
     // Generic query methods
