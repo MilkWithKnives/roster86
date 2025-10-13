@@ -32,11 +32,30 @@ router.get('/', async(req, res) => {
         }
 
         const whereClause = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
-        const orderClause = orderBy || 'a.date DESC, a.start_time ASC';
+        
+        // Handle orderBy parameter - convert frontend format to SQL
+        let orderClause = 'a.date DESC, a.start_time ASC';
+        if (orderBy) {
+            if (orderBy === '-created_date' || orderBy === '-created_at') {
+                orderClause = 'a.created_at DESC';
+            } else if (orderBy === 'created_date' || orderBy === 'created_at') {
+                orderClause = 'a.created_at ASC';
+            } else if (orderBy === '-date') {
+                orderClause = 'a.date DESC';
+            } else if (orderBy === 'date') {
+                orderClause = 'a.date ASC';
+            } else {
+                orderClause = orderBy; // Use as-is for other formats
+            }
+        }
+        
         const limitClause = limit ? `LIMIT ${parseInt(limit)}` : '';
 
         const query = `
-            SELECT a.*, e.full_name as employee_name, s.name as schedule_name, st.name as shift_template_name
+            SELECT a.*, 
+                   COALESCE(e.full_name, 'Unknown Employee') as employee_name, 
+                   COALESCE(s.name, 'Unknown Schedule') as schedule_name, 
+                   COALESCE(st.name, 'No Template') as shift_template_name
             FROM assignments a
             LEFT JOIN employees e ON a.employee_id = e.id
             LEFT JOIN schedules s ON a.schedule_id = s.id
@@ -47,7 +66,9 @@ router.get('/', async(req, res) => {
         `;
 
         const assignments = await database.all(query, params);
-        res.json(assignments);
+        
+        // Return empty array if no assignments found - this is normal
+        res.json(assignments || []);
     } catch (error) {
         console.error('Get assignments error:', error);
         res.status(500).json({ error: 'Internal Server Error', message: 'Failed to fetch assignments' });

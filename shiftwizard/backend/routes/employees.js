@@ -43,7 +43,7 @@ const validateEmployeeUpdate = [
 // GET /api/employees - Get all employees
 router.get('/', async(req, res) => {
     try {
-        const { department, status, search } = req.query;
+        const { department, status, search, orderBy, limit } = req.query;
         let sql = 'SELECT * FROM employees WHERE 1=1';
         const params = [];
 
@@ -63,7 +63,28 @@ router.get('/', async(req, res) => {
             params.push(searchTerm, searchTerm, searchTerm);
         }
 
-        sql += ' ORDER BY full_name ASC';
+        // Handle orderBy parameter
+        if (orderBy) {
+            const order = orderBy.startsWith('-') ? 'DESC' : 'ASC';
+            const column = orderBy.startsWith('-') ? orderBy.substring(1) : orderBy;
+            
+            // Validate column name to prevent SQL injection
+            const validColumns = ['id', 'employee_id', 'full_name', 'email', 'department', 
+                                'position', 'hire_date', 'hourly_rate', 'status', 
+                                'created_at', 'updated_at'];
+            if (validColumns.includes(column)) {
+                sql += ` ORDER BY ${column} ${order}`;
+            } else {
+                sql += ' ORDER BY full_name ASC';
+            }
+        } else {
+            sql += ' ORDER BY full_name ASC';
+        }
+        
+        // Handle limit parameter
+        if (limit && !isNaN(parseInt(limit))) {
+            sql += ` LIMIT ${parseInt(limit)}`;
+        }
 
         const employees = await database.all(sql, params);
 

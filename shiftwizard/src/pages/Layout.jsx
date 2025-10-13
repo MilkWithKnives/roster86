@@ -249,6 +249,91 @@ export default function Layout({ currentPageName, children }) {
             border-right: 1px solid var(--glass-border);
           }
           
+          /* Missing CSS Classes */
+          .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: var(--shadow-soft);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+          
+          .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+          }
+          
+          .modern-button {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--text-primary);
+          }
+          
+          .modern-button:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-soft);
+          }
+          
+          .neuro-button {
+            background: var(--bg-primary);
+            border: 2px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: 
+              8px 8px 16px rgba(0, 0, 0, 0.1),
+              -8px -8px 16px rgba(255, 255, 255, 0.8),
+              inset 2px 2px 4px rgba(0, 0, 0, 0.1),
+              inset -2px -2px 4px rgba(255, 255, 255, 0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+          
+          .neuro-button:hover {
+            box-shadow: 
+              4px 4px 8px rgba(0, 0, 0, 0.1),
+              -4px -4px 8px rgba(255, 255, 255, 0.8),
+              inset 4px 4px 8px rgba(0, 0, 0, 0.1),
+              inset -4px -4px 8px rgba(255, 255, 255, 0.8);
+          }
+          
+          .neuro-input {
+            background: var(--bg-primary);
+            border: 2px solid var(--glass-border);
+            border-radius: 12px;
+            box-shadow: 
+              inset 4px 4px 8px rgba(0, 0, 0, 0.1),
+              inset -4px -4px 8px rgba(255, 255, 255, 0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+          
+          .neuro-input:focus-within {
+            border-color: var(--accent-primary);
+            box-shadow: 
+              inset 2px 2px 4px rgba(0, 0, 0, 0.1),
+              inset -2px -2px 4px rgba(255, 255, 255, 0.8),
+              0 0 0 2px rgba(102, 126, 234, 0.2);
+          }
+          
+          .neuro-icon {
+            background: linear-gradient(145deg, #667eea, #764ba2);
+            border-radius: 12px;
+            box-shadow: 
+              4px 4px 8px rgba(0, 0, 0, 0.2),
+              -4px -4px 8px rgba(255, 255, 255, 0.1);
+          }
+          
+          .neuro-badge {
+            background: linear-gradient(145deg, #667eea, #764ba2);
+            border-radius: 20px;
+            box-shadow: 
+              2px 2px 4px rgba(0, 0, 0, 0.2),
+              -2px -2px 4px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+          }
+          
           @keyframes fadeInUp {
             from {
               opacity: 0;

@@ -1,4 +1,4 @@
-import Layout from "./Layout.jsx";
+import Layout from "./Layout";
 import Dashboard from "./Dashboard";
 import Employees from "./Employees";
 import ShiftTemplates from "./ShiftTemplates";

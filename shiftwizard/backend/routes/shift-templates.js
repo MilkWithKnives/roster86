@@ -19,7 +19,7 @@ const validateShiftTemplate = [
 // GET /api/shift-templates
 router.get('/', async(req, res) => {
     try {
-        const { department, is_active } = req.query;
+        const { department, is_active, orderBy, limit } = req.query;
         let sql = 'SELECT * FROM shift_templates WHERE 1=1';
         const params = [];
 
@@ -33,14 +33,34 @@ router.get('/', async(req, res) => {
             params.push(is_active === 'true' ? 1 : 0);
         }
 
-        sql += ' ORDER BY name ASC';
+        // Handle orderBy parameter - convert frontend format to SQL
+        let orderClause = 'name ASC'; // default
+        if (orderBy) {
+            if (orderBy === '-created_date' || orderBy === '-created_at') {
+                orderClause = 'created_at DESC';
+            } else if (orderBy === 'created_date' || orderBy === 'created_at') {
+                orderClause = 'created_at ASC';
+            } else if (orderBy === '-name') {
+                orderClause = 'name DESC';
+            } else if (orderBy === 'name') {
+                orderClause = 'name ASC';
+            } else {
+                orderClause = orderBy; // Use as-is for other formats
+            }
+        }
+        
+        sql += ` ORDER BY ${orderClause}`;
+        
+        if (limit) {
+            sql += ` LIMIT ${parseInt(limit)}`;
+        }
 
         const templates = await database.all(sql, params);
 
         const formattedTemplates = templates.map(template => ({
             ...template,
             required_skills: template.required_skills ? JSON.parse(template.required_skills) : null,
-            is_active: Boolean(template.is_active)
+            active: Boolean(template.is_active) // Frontend expects 'active'
         }));
 
         res.json(formattedTemplates);
@@ -70,7 +90,7 @@ router.get('/:id', async(req, res) => {
         const formattedTemplate = {
             ...template,
             required_skills: template.required_skills ? JSON.parse(template.required_skills) : null,
-            is_active: Boolean(template.is_active)
+            active: Boolean(template.is_active) // Frontend expects 'active'
         };
 
         res.json(formattedTemplate);
@@ -105,8 +125,12 @@ router.post('/', requireRole(['admin', 'manager']), validateShiftTemplate, async
             max_employees,
             department,
             color = '#3B82F6',
-            is_active = true
+            is_active = true,
+            active // Handle frontend sending 'active'
         } = req.body;
+        
+        // Use 'active' if provided, otherwise use 'is_active'
+        const activeValue = active !== undefined ? active : is_active;
 
         const requiredSkillsJson = required_skills ? JSON.stringify(required_skills) : null;
 
@@ -118,7 +142,7 @@ router.post('/', requireRole(['admin', 'manager']), validateShiftTemplate, async
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
                 name, description, start_time, end_time, break_duration,
                 requiredSkillsJson, min_employees, max_employees, department,
-                color, is_active ? 1 : 0
+                color, activeValue ? 1 : 0
             ]
         );
 
@@ -129,7 +153,7 @@ router.post('/', requireRole(['admin', 'manager']), validateShiftTemplate, async
         const formattedTemplate = {
             ...newTemplate,
             required_skills: newTemplate.required_skills ? JSON.parse(newTemplate.required_skills) : null,
-            is_active: Boolean(newTemplate.is_active)
+            active: Boolean(newTemplate.is_active) // Frontend expects 'active'
         };
 
         res.status(201).json({
@@ -179,8 +203,12 @@ router.put('/:id', requireRole(['admin', 'manager']), validateShiftTemplate, asy
             max_employees,
             department,
             color,
-            is_active
+            is_active,
+            active // Handle frontend sending 'active'
         } = req.body;
+        
+        // Use 'active' if provided, otherwise use 'is_active'
+        const activeValue = active !== undefined ? active : is_active;
 
         const requiredSkillsJson = required_skills ? JSON.stringify(required_skills) : null;
 
@@ -193,7 +221,7 @@ router.put('/:id', requireRole(['admin', 'manager']), validateShiftTemplate, asy
       WHERE id = ?`, [
                 name, description, start_time, end_time, break_duration,
                 requiredSkillsJson, min_employees, max_employees, department,
-                color, is_active ? 1 : 0, templateId
+                color, activeValue ? 1 : 0, templateId
             ]
         );
 
@@ -204,7 +232,7 @@ router.put('/:id', requireRole(['admin', 'manager']), validateShiftTemplate, asy
         const formattedTemplate = {
             ...updatedTemplate,
             required_skills: updatedTemplate.required_skills ? JSON.parse(updatedTemplate.required_skills) : null,
-            is_active: Boolean(updatedTemplate.is_active)
+            active: Boolean(updatedTemplate.is_active) // Frontend expects 'active'
         };
 
         res.json({

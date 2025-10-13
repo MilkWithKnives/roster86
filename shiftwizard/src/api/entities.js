@@ -20,8 +20,13 @@ export const Employee = {
         return response.data;
     },
 
-    async list() {
-        return this.findAll();
+    async list(orderBy, limit) {
+        const params = new URLSearchParams();
+        if (orderBy) params.append('orderBy', orderBy);
+        if (limit) params.append('limit', limit);
+
+        const response = await apiClient.get(`/employees?${params.toString()}`);
+        return response.data;
     },
 
     async findById(id) {
@@ -52,8 +57,13 @@ export const ShiftTemplate = {
         return response.data;
     },
 
-    async list() {
-        return this.findAll();
+    async list(orderBy, limit) {
+        const params = new URLSearchParams();
+        if (orderBy) params.append('orderBy', orderBy);
+        if (limit) params.append('limit', limit);
+
+        const response = await apiClient.get(`/shift-templates?${params.toString()}`);
+        return response.data;
     },
 
     async findById(id) {

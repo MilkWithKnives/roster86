@@ -51,6 +51,10 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
       await onSave(cleanData);
     } catch (error) {
       console.error("Error saving employee:", error);
+      console.error("Request data:", cleanData);
+      if (error.response?.data) {
+        console.error("Backend error details:", error.response.data);
+      }
     } finally {
       setIsSaving(false);
     }
