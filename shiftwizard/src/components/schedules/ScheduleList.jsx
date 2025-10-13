@@ -48,16 +48,16 @@ export default function ScheduleList({ schedules, isLoading, onSelectSchedule })
         <div className="neuro-icon w-16 h-16 mx-auto mb-6 flex items-center justify-center">
           <Calendar className="w-8 h-8 text-white" />
         </div>
-        <h3 className="text-xl font-medium text-gray-700 mb-2">No schedules created yet</h3>
-        <p className="text-gray-500 mb-6">Generate your first weekly schedule to get started</p>
+        <h3 className="text-xl font-medium mb-2" style={{ color: 'var(--text-primary)' }}>No schedules created yet</h3>
+        <p className="mb-6" style={{ color: 'var(--text-secondary)' }}>Generate your first weekly schedule to get started</p>
       </div>
     );
   }
 
   return (
     <div className="neuro-card">
-      <div className="p-6 border-b border-gray-300">
-        <h3 className="text-xl font-bold text-gray-700">Weekly Schedules ({schedules.length})</h3>
+      <div className="p-6 border-b" style={{ borderColor: 'var(--border-primary)' }}>
+        <h3 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Weekly Schedules ({schedules.length})</h3>
       </div>
       <div className="p-6 space-y-4">
         {schedules.map((schedule) => {
@@ -70,10 +70,10 @@ export default function ScheduleList({ schedules, isLoading, onSelectSchedule })
                     <Calendar className="w-7 h-7 text-white" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-700 text-lg">
+                    <h4 className="font-semibold text-lg" style={{ color: 'var(--text-primary)' }}>
                       {schedule.name || `Week of ${format(new Date(schedule.start_date), "MMM d, yyyy")}`}
                     </h4>
-                    <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
+                    <div className="flex items-center gap-4 mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
                       <div className="flex items-center gap-1">
                         <Clock className="w-4 h-4" />
                         <span>{schedule.total_hours || 0} total hours</span>
@@ -98,8 +98,8 @@ export default function ScheduleList({ schedules, isLoading, onSelectSchedule })
                     className="neuro-button px-4 py-2 flex items-center gap-2 cursor-pointer"
                     onClick={() => onSelectSchedule(schedule)}
                   >
-                    <Eye className="w-4 h-4 text-gray-600" />
-                    <span className="font-medium text-gray-600">View Details</span>
+                    <Eye className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
+                    <span className="font-medium" style={{ color: 'var(--text-secondary)' }}>View Details</span>
                   </div>
                 </div>
               </div>

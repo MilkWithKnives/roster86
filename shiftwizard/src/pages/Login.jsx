@@ -10,17 +10,41 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
   const { login } = useAuth();
   const navigate = useNavigate();
+  
+  const validateForm = () => {
+    const newErrors = {};
+    
+    // Email validation
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    
+    // Password validation
+    if (!password || password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters long';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setErrors({});
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     try {
       await login({ email, password });
       navigate('/dashboard');
     } catch (err) {
-      setError('Failed to log in. Please check your credentials.');
+      setError(err.response?.data?.message || 'Failed to log in. Please check your credentials.');
       console.error(err);
     }
   };
@@ -44,6 +68,9 @@ export default function Login() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
+              {errors.email && (
+                <p className="text-red-500 text-sm">{errors.email}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
@@ -54,6 +81,9 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              {errors.password && (
+                <p className="text-red-500 text-sm">{errors.password}</p>
+              )}
             </div>
             <Button type="submit" className="w-full">Login</Button>
           </form>

@@ -11,17 +11,59 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
   const { register } = useAuth();
   const navigate = useNavigate();
+  
+  const validateForm = () => {
+    const newErrors = {};
+    
+    // Full name validation
+    if (!fullName || fullName.trim().length < 2) {
+      newErrors.fullName = 'Full name must be at least 2 characters long';
+    }
+    
+    // Email validation
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    
+    // Password validation - stronger requirements
+    if (!password || password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters long';
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+      newErrors.password = 'Password must contain at least one lowercase letter, one uppercase letter, and one number';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setErrors({});
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     try {
       await register({ email, password, full_name: fullName });
       navigate('/dashboard');
     } catch (err) {
-      setError('Failed to register. Please try again.');
+      // Handle backend validation errors
+      if (err.response?.data?.details) {
+        const backendErrors = {};
+        err.response.data.details.forEach(detail => {
+          if (detail.field) {
+            backendErrors[detail.field] = detail.message;
+          }
+        });
+        setErrors(backendErrors);
+      } else {
+        setError(err.response?.data?.message || 'Failed to register. Please try again.');
+      }
       console.error(err);
     }
   };
@@ -45,6 +87,9 @@ export default function Register() {
                 onChange={(e) => setFullName(e.target.value)}
                 required
               />
+              {errors.fullName && (
+                <p className="text-red-500 text-sm">{errors.fullName}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -55,6 +100,9 @@ export default function Register() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
+              {errors.email && (
+                <p className="text-red-500 text-sm">{errors.email}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
@@ -65,6 +113,9 @@ export default function Register() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              {errors.password && (
+                <p className="text-red-500 text-sm">{errors.password}</p>
+              )}
             </div>
             <Button type="submit" className="w-full">Register</Button>
           </form>

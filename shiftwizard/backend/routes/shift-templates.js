@@ -16,7 +16,7 @@ const validateShiftTemplate = [
     body('color').optional().matches(/^#[0-9A-F]{6}$/i).withMessage('Invalid color format')
 ];
 
-// GET /api/shift-templates
+// GET /api/shift-templates - Allow all authenticated users to view templates
 router.get('/', async(req, res) => {
     try {
         const { department, is_active, orderBy, limit } = req.query;
@@ -73,7 +73,7 @@ router.get('/', async(req, res) => {
     }
 });
 
-// GET /api/shift-templates/:id
+// GET /api/shift-templates/:id - Allow all authenticated users to view individual templates
 router.get('/:id', async(req, res) => {
     try {
         const template = await database.get(

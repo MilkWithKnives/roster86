@@ -40,8 +40,8 @@ const validateEmployeeUpdate = [
     body('status').optional().isIn(['active', 'inactive', 'terminated']).withMessage('Invalid status')
 ];
 
-// GET /api/employees - Get all employees
-router.get('/', async(req, res) => {
+// GET /api/employees - Get all employees (admin/manager only)
+router.get('/', requireRole(['admin', 'manager']), async(req, res) => {
     try {
         const { department, status, search, orderBy, limit } = req.query;
         let sql = 'SELECT * FROM employees WHERE 1=1';
@@ -108,6 +108,17 @@ router.get('/', async(req, res) => {
 
 // GET /api/employees/:id - Get employee by ID
 router.get('/:id', async(req, res) => {
+    // Allow users to view their own employee record, or admin/manager to view any
+    const requestedId = parseInt(req.params.id);
+    const isOwnRecord = req.user.id === requestedId;
+    const hasManagerRole = ['admin', 'manager'].includes(req.user.role);
+    
+    if (!isOwnRecord && !hasManagerRole) {
+        return res.status(403).json({
+            error: 'Access denied',
+            message: 'You can only view your own employee record'
+        });
+    }
     try {
         const employee = await database.get(
             'SELECT * FROM employees WHERE id = ?', [req.params.id]

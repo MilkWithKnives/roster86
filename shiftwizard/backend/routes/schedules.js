@@ -6,7 +6,7 @@ const { authenticateToken, requireRole } = require('../middleware/auth');
 const router = express.Router();
 router.use(authenticateToken);
 
-// GET /api/schedules
+// GET /api/schedules - Allow all authenticated users to view schedules
 router.get('/', async(req, res) => {
     try {
         // Support orderBy query param for sorting
@@ -34,7 +34,7 @@ router.get('/', async(req, res) => {
     }
 });
 
-// GET /api/schedules/:id
+// GET /api/schedules/:id - Allow all authenticated users to view individual schedules
 router.get('/:id', async(req, res) => {
     try {
         const schedule = await database.get('SELECT * FROM schedules WHERE id = ?', [req.params.id]);

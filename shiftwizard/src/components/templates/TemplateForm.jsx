@@ -23,14 +23,68 @@ export default function TemplateForm({ template, onSave, onCancel }) {
     active: true
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    // Required fields
+    if (!formData.name || formData.name.trim().length < 2) {
+      newErrors.name = 'Template name must be at least 2 characters';
+    }
+    
+    // Time validation
+    if (formData.start_time && formData.end_time) {
+      const start = new Date(`2000-01-01T${formData.start_time}`);
+      const end = new Date(`2000-01-01T${formData.end_time}`);
+      if (start >= end) {
+        newErrors.end_time = 'End time must be after start time';
+      }
+    }
+    
+    // Staff validation
+    if (formData.min_staff < 1) {
+      newErrors.min_staff = 'Minimum staff must be at least 1';
+    }
+    
+    if (formData.max_staff && formData.min_staff && formData.max_staff < formData.min_staff) {
+      newErrors.max_staff = 'Maximum staff must be greater than or equal to minimum staff';
+    }
+    
+    // Priority validation
+    if (formData.priority < 1 || formData.priority > 10) {
+      newErrors.priority = 'Priority must be between 1 and 10';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setIsSaving(true);
     try {
       await onSave(formData);
     } catch (error) {
       console.error("Error saving template:", error);
+      
+      // Handle backend validation errors
+      if (error.response?.data?.details) {
+        const backendErrors = {};
+        error.response.data.details.forEach(detail => {
+          if (detail.field) {
+            backendErrors[detail.field] = detail.message;
+          }
+        });
+        setErrors(backendErrors);
+      } else {
+        setErrors({ general: error.response?.data?.message || 'An error occurred while saving' });
+      }
     } finally {
       setIsSaving(false);
     }
@@ -63,6 +117,13 @@ export default function TemplateForm({ template, onSave, onCancel }) {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* General error display */}
+          {errors.general && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              {errors.general}
+            </div>
+          )}
+          
           <div className="space-y-3">
             <Label htmlFor="name" style={{ color: 'var(--text-primary)' }}>Template Name *</Label>
             <Input 
@@ -72,6 +133,9 @@ export default function TemplateForm({ template, onSave, onCancel }) {
               required 
               className="modern-button"
             />
+            {errors.name && (
+              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+            )}
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -112,6 +176,9 @@ export default function TemplateForm({ template, onSave, onCancel }) {
                 required 
                 className="modern-button"
               />
+              {errors.start_time && (
+                <p className="text-red-500 text-sm mt-1">{errors.start_time}</p>
+              )}
             </div>
             <div className="space-y-3">
               <Label htmlFor="end_time" style={{ color: 'var(--text-primary)' }}>End Time *</Label>
@@ -123,6 +190,9 @@ export default function TemplateForm({ template, onSave, onCancel }) {
                 required 
                 className="modern-button"
               />
+              {errors.end_time && (
+                <p className="text-red-500 text-sm mt-1">{errors.end_time}</p>
+              )}
             </div>
             <div className="space-y-3">
               <Label htmlFor="recurrence" style={{ color: 'var(--text-primary)' }}>Recurrence</Label>
@@ -145,22 +215,28 @@ export default function TemplateForm({ template, onSave, onCancel }) {
               <Input 
                 id="min_staff" 
                 type="number" 
-                min="0" 
+                min="1" 
                 value={formData.min_staff} 
                 onChange={(e) => handleInputChange('min_staff', parseInt(e.target.value))} 
                 className="modern-button"
               />
+              {errors.min_staff && (
+                <p className="text-red-500 text-sm mt-1">{errors.min_staff}</p>
+              )}
             </div>
             <div className="space-y-3">
               <Label htmlFor="max_staff" style={{ color: 'var(--text-primary)' }}>Max Staff</Label>
               <Input 
                 id="max_staff" 
                 type="number" 
-                min="0" 
+                min="1" 
                 value={formData.max_staff} 
                 onChange={(e) => handleInputChange('max_staff', parseInt(e.target.value))} 
                 className="modern-button"
               />
+              {errors.max_staff && (
+                <p className="text-red-500 text-sm mt-1">{errors.max_staff}</p>
+              )}
             </div>
             <div className="space-y-3">
               <Label htmlFor="priority" style={{ color: 'var(--text-primary)' }}>Priority (1-10)</Label>
@@ -173,6 +249,9 @@ export default function TemplateForm({ template, onSave, onCancel }) {
                 onChange={(e) => handleInputChange('priority', parseInt(e.target.value))} 
                 className="modern-button"
               />
+              {errors.priority && (
+                <p className="text-red-500 text-sm mt-1">{errors.priority}</p>
+              )}
             </div>
           </div>
 

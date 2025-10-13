@@ -24,9 +24,51 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
     status: "active"
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    // Required fields
+    if (!formData.full_name || formData.full_name.trim().length < 2) {
+      newErrors.full_name = 'Full name must be at least 2 characters';
+    }
+    
+    if (!formData.employee_id || formData.employee_id.trim().length === 0) {
+      newErrors.employee_id = 'Employee ID is required';
+    }
+    
+    // Email validation (if provided)
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    
+    // Phone validation (if provided)
+    if (formData.phone && !/^[\d\s\-+()]+$/.test(formData.phone)) {
+      newErrors.phone = 'Please enter a valid phone number';
+    }
+    
+    // Hourly rate validation (if provided)
+    if (formData.hourly_rate && (isNaN(formData.hourly_rate) || parseFloat(formData.hourly_rate) < 0)) {
+      newErrors.hourly_rate = 'Hourly rate must be a positive number';
+    }
+    
+    // Max hours validation
+    if (formData.max_hours_per_week && (isNaN(formData.max_hours_per_week) || formData.max_hours_per_week < 1 || formData.max_hours_per_week > 168)) {
+      newErrors.max_hours_per_week = 'Max hours per week must be between 1 and 168';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setIsSaving(true);
     try {
       // Clean up data - remove null/empty values that would fail validation
@@ -51,9 +93,18 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
       await onSave(cleanData);
     } catch (error) {
       console.error("Error saving employee:", error);
-      console.error("Request data:", cleanData);
-      if (error.response?.data) {
-        console.error("Backend error details:", error.response.data);
+      
+      // Handle backend validation errors
+      if (error.response?.data?.details) {
+        const backendErrors = {};
+        error.response.data.details.forEach(detail => {
+          if (detail.field) {
+            backendErrors[detail.field] = detail.message;
+          }
+        });
+        setErrors(backendErrors);
+      } else {
+        setErrors({ general: error.response?.data?.message || 'An error occurred while saving' });
       }
     } finally {
       setIsSaving(false);
@@ -111,6 +162,13 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Basic Info */}
+          {/* General error display */}
+          {errors.general && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              {errors.general}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3">
               <Label htmlFor="full_name" className="text-sm font-medium text-gray-700">
@@ -125,6 +183,9 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
                   required
                 />
               </div>
+              {errors.full_name && (
+                <p className="text-red-500 text-sm mt-1">{errors.full_name}</p>
+              )}
             </div>
 
             <div className="space-y-3">
@@ -141,6 +202,9 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
                   required
                 />
               </div>
+              {errors.employee_id && (
+                <p className="text-red-500 text-sm mt-1">{errors.employee_id}</p>
+              )}
             </div>
           </div>
 
@@ -199,6 +263,9 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
                   className="border-0 bg-transparent focus:ring-0"
                 />
               </div>
+              {errors.phone && (
+                <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+              )}
             </div>
 
             <div className="space-y-3">
@@ -214,6 +281,9 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
                   className="border-0 bg-transparent focus:ring-0"
                 />
               </div>
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+              )}
             </div>
           </div>
 
@@ -249,6 +319,9 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
                   className="border-0 bg-transparent focus:ring-0"
                 />
               </div>
+              {errors.max_hours_per_week && (
+                <p className="text-red-500 text-sm mt-1">{errors.max_hours_per_week}</p>
+              )}
             </div>
 
             <div className="space-y-3">
@@ -266,6 +339,9 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
                   className="border-0 bg-transparent focus:ring-0"
                 />
               </div>
+              {errors.hourly_rate && (
+                <p className="text-red-500 text-sm mt-1">{errors.hourly_rate}</p>
+              )}
             </div>
           </div>
 

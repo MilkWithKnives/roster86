@@ -37,16 +37,16 @@ export default function EmployeeTable({ employees, isLoading, onEdit, onDelete }
         <div className="neuro-icon w-16 h-16 mx-auto mb-4 flex items-center justify-center">
           <Users className="w-8 h-8 text-white" />
         </div>
-        <h3 className="text-lg font-medium text-gray-700 mb-2">No employees found</h3>
-        <p className="text-gray-500">Add your first team member to get started</p>
+        <h3 className="text-lg font-medium mb-2" style={{ color: 'var(--text-primary)' }}>No employees found</h3>
+        <p style={{ color: 'var(--text-secondary)' }}>Add your first team member to get started</p>
       </div>
     );
   }
 
   return (
     <div className="neuro-card">
-      <div className="p-6 border-b border-gray-300">
-        <h3 className="text-lg font-bold text-gray-700">Team Members ({employees.length})</h3>
+      <div className="p-6 border-b" style={{ borderColor: 'var(--border-primary)' }}>
+        <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Team Members ({employees.length})</h3>
       </div>
       <div className="p-6 space-y-4">
         {employees.map((employee) => (
@@ -58,12 +58,12 @@ export default function EmployeeTable({ employees, isLoading, onEdit, onDelete }
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h4 className="font-semibold text-gray-700">{employee.full_name || employee.name}</h4>
+                    <h4 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{employee.full_name || employee.name}</h4>
                     <div className={`neuro-badge px-3 py-1 text-xs font-medium ${roleColors[employee.position || employee.role] || 'bg-gray-400 text-white'}`}>
                       {employee.position || employee.role}
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-500">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
                     <div className="flex items-center gap-2">
                       <Phone className="w-3 h-3" />
                       {employee.phone || 'No phone'}
@@ -93,7 +93,7 @@ export default function EmployeeTable({ employees, isLoading, onEdit, onDelete }
                   className="neuro-button p-2 cursor-pointer"
                   onClick={() => onEdit(employee)}
                 >
-                  <Edit className="w-4 h-4 text-gray-600" />
+                  <Edit className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
                 </div>
                 <div 
                   className="neuro-button p-2 cursor-pointer hover:bg-red-50"

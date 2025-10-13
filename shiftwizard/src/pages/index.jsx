@@ -11,6 +11,7 @@ import Login from "./Login";
 import Register from "./Register";
 import Landing from "./Landing";
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import RoleProtectedRoute from '@/components/auth/RoleProtectedRoute';
 
 import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'react-router-dom';
 
@@ -25,10 +26,10 @@ export default function Pages() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/dashboard" element={<ProtectedRoute><Layout currentPageName="Dashboard"><Dashboard /></Layout></ProtectedRoute>} />
-                <Route path="/employees" element={<ProtectedRoute><Layout currentPageName="Employees"><Employees /></Layout></ProtectedRoute>} />
-                <Route path="/shifttemplates" element={<ProtectedRoute><Layout currentPageName="ShiftTemplates"><ShiftTemplates /></Layout></ProtectedRoute>} />
+                <Route path="/employees" element={<RoleProtectedRoute allowedRoles={['admin', 'manager']}><Layout currentPageName="Employees"><Employees /></Layout></RoleProtectedRoute>} />
+                <Route path="/shifttemplates" element={<RoleProtectedRoute allowedRoles={['admin', 'manager']}><Layout currentPageName="ShiftTemplates"><ShiftTemplates /></Layout></RoleProtectedRoute>} />
                 <Route path="/schedules" element={<ProtectedRoute><Layout currentPageName="Schedules"><Schedules /></Layout></ProtectedRoute>} />
-                <Route path="/settings" element={<ProtectedRoute><Layout currentPageName="Settings"><Settings /></Layout></ProtectedRoute>} />
+                <Route path="/settings" element={<RoleProtectedRoute allowedRoles={['admin']}><Layout currentPageName="Settings"><Settings /></Layout></RoleProtectedRoute>} />
                 <Route path="/pricing" element={<ProtectedRoute><Layout currentPageName="Pricing"><Pricing /></Layout></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><Layout currentPageName="Profile"><Profile /></Layout></ProtectedRoute>} />
                 {/* 404 - Redirect to dashboard for authenticated users, landing for others */}

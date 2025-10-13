@@ -128,7 +128,7 @@ export default function Schedules() {
     // Simple strategy implementation
     let sortedEmployees = [...employees];
     if (strategy === 'cost_optimized') {
-      sortedEmployees.sort((a, b) => (a.wage || 15) - (b.wage || 15)); // Default wage if not set
+      sortedEmployees.sort((a, b) => (a.hourly_rate || a.wage || 15) - (b.hourly_rate || b.wage || 15)); // Default wage if not set
     } else if (strategy === 'favor_seniority') {
       sortedEmployees.sort((a, b) => (b.seniority || 1) - (a.seniority || 1)); // Default seniority
     }
@@ -137,7 +137,7 @@ export default function Schedules() {
       // More flexible employee filtering - prioritize by preference but don't exclude
       const availableEmployees = sortedEmployees.filter(emp => {
         // Must match role
-        if (emp.role !== template.role) return false;
+        if ((emp.role || emp.position) !== template.role) return false;
         
         // Check availability - but be more flexible
         if (emp.preferred_days && emp.preferred_days.length > 0) {
@@ -152,7 +152,7 @@ export default function Schedules() {
       // If no exact matches found (role + preference), try to find employees with the same role regardless of preference
       let fallbackEmployees = [];
       if (availableEmployees.length === 0) {
-        fallbackEmployees = sortedEmployees.filter(emp => emp.role === template.role);
+        fallbackEmployees = sortedEmployees.filter(emp => (emp.role || emp.position) === template.role);
         console.log(`No preferred employees for "${template.name}" (role: ${template.role}, day: ${template.day}), found ${fallbackEmployees.length} fallback employees`);
       }
       
@@ -191,9 +191,9 @@ export default function Schedules() {
           });
 
           assignments.push(assignment);
-          console.log(`✅ Created assignment: ${employee.name} on ${dateString} ${template.start_time}-${template.end_time} (${hours}h)`);
+          console.log(`✅ Created assignment: ${employee.full_name || employee.name} on ${dateString} ${template.start_time}-${template.end_time} (${hours}h)`);
         } catch (error) {
-          console.error(`❌ Failed to create assignment for ${employee.name} for template "${template.name}":`, error);
+          console.error(`❌ Failed to create assignment for ${employee.full_name || employee.name} for template "${template.name}":`, error);
         }
       }
       

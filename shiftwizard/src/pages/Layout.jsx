@@ -40,38 +40,51 @@ const navigationItems = [
     title: "Dashboard",
     url: createPageUrl("Dashboard"),
     icon: LayoutDashboard,
+    roles: ['admin', 'manager', 'employee'] // All roles can access dashboard
   },
   {
     title: "Employees", 
     url: createPageUrl("Employees"),
     icon: Users,
+    roles: ['admin', 'manager'] // Only admin/manager can manage employees
   },
   {
     title: "Shift Templates",
     url: createPageUrl("ShiftTemplates"), 
     icon: Clock,
+    roles: ['admin', 'manager'] // Only admin/manager can manage templates
   },
   {
     title: "Schedules",
     url: createPageUrl("Schedules"),
     icon: Calendar,
+    roles: ['admin', 'manager', 'employee'] // All roles can view schedules
   },
   {
     title: "Pricing",
     url: createPageUrl("Pricing"),
     icon: DollarSign,
+    roles: ['admin', 'manager', 'employee'] // All roles can view pricing
   },
   {
-    title: "Profile", // Added Profile navigation item
+    title: "Profile",
     url: createPageUrl("Profile"),
     icon: UserIcon,
+    roles: ['admin', 'manager', 'employee'] // All roles can access their profile
   },
   {
     title: "Settings",
     url: createPageUrl("Settings"),
-    icon: Settings
+    icon: Settings,
+    roles: ['admin'] // Only admin can access settings
   }
 ];
+
+// Function to filter navigation items based on user role
+const getFilteredNavigationItems = (userRole) => {
+  if (!userRole) return [];
+  return navigationItems.filter(item => item.roles.includes(userRole));
+};
 
 export default function Layout({ currentPageName, children }) {
   const location = useLocation();
@@ -334,6 +347,41 @@ export default function Layout({ currentPageName, children }) {
             border: 1px solid rgba(255, 255, 255, 0.2);
           }
           
+          .neuro-card {
+            background: var(--bg-primary);
+            border: 2px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: 
+              16px 16px 32px rgba(0, 0, 0, 0.1),
+              -16px -16px 32px rgba(255, 255, 255, 0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+          
+          .neuro-card:hover {
+            box-shadow: 
+              12px 12px 24px rgba(0, 0, 0, 0.1),
+              -12px -12px 24px rgba(255, 255, 255, 0.8);
+            transform: translateY(-2px);
+          }
+          
+          .neuro-card-inset {
+            background: var(--bg-primary);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: 
+              inset 8px 8px 16px rgba(0, 0, 0, 0.1),
+              inset -8px -8px 16px rgba(255, 255, 255, 0.8),
+              2px 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+          
+          .neuro-card-inset:hover {
+            box-shadow: 
+              inset 4px 4px 8px rgba(0, 0, 0, 0.1),
+              inset -4px -4px 8px rgba(255, 255, 255, 0.8),
+              4px 4px 8px rgba(0, 0, 0, 0.1);
+          }
+          
           @keyframes fadeInUp {
             from {
               opacity: 0;
@@ -375,7 +423,7 @@ export default function Layout({ currentPageName, children }) {
           
           <SidebarContent className="px-4">
             <SidebarMenu className="space-y-2">
-              {navigationItems.map((item) => (
+              {getFilteredNavigationItems(user?.role).map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild className="p-0 h-auto bg-transparent hover:bg-transparent">
                     <Link to={item.url} className="w-full">
@@ -449,12 +497,14 @@ export default function Layout({ currentPageName, children }) {
                         <span>Profile</span>
                       </DropdownMenuItem>
                     </Link>
-                    <Link to={createPageUrl("Settings")}>
-                      <DropdownMenuItem className="cursor-pointer">
-                        <Settings className="mr-2 h-4 w-4" />
-                        <span>Settings</span>
-                      </DropdownMenuItem>
-                    </Link>
+                    {user?.role === 'admin' && (
+                      <Link to={createPageUrl("Settings")}>
+                        <DropdownMenuItem className="cursor-pointer">
+                          <Settings className="mr-2 h-4 w-4" />
+                          <span>Settings</span>
+                        </DropdownMenuItem>
+                      </Link>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
                       <LogOut className="mr-2 h-4 w-4" />
