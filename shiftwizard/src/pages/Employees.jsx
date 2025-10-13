@@ -42,7 +42,7 @@ export default function Employees() {
   const loadEmployees = async () => {
     try {
       setIsLoading(true);
-      const data = await Employee.list('-created_date');
+      const data = await Employee.list('-created_at');
       setEmployees(data);
     } catch (error) {
       console.error("Error loading employees:", error);
@@ -75,10 +75,10 @@ export default function Employees() {
   const handleDeleteEmployee = async (employeeId) => {
     if (window.confirm("Are you sure you want to delete this employee?")) {
       try {
-        await Employee.update(employeeId, { status: 'inactive' });
+        await Employee.delete(employeeId);
         loadEmployees();
       } catch (error) {
-        console.error("Error deactivating employee:", error);
+        console.error("Error deleting employee:", error);
       }
     }
   };
