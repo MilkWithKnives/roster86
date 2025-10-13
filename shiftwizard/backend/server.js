@@ -36,6 +36,7 @@ app.use(helmet());
 // CORS configuration - allow multiple origins
 const allowedOrigins = [
     'http://localhost:5173',
+    'http://localhost:5174',
     'https://roster86.com',
     'https://www.roster86.com',
     process.env.FRONTEND_URL

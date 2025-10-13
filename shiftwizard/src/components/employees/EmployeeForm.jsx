@@ -17,7 +17,7 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
     department: "Operations",
     position: "Server",
     hire_date: new Date().toISOString().split('T')[0],
-    hourly_rate: 15.00,
+    hourly_rate: "",  // Start empty to avoid NaN issues
     max_hours_per_week: 40,
     availability: null,
     skills: null,
@@ -29,7 +29,7 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
     e.preventDefault();
     setIsSaving(true);
     try {
-      // Clean up data - remove null values that would fail validation
+      // Clean up data - remove null/empty values that would fail validation
       const cleanData = { ...formData };
       if (cleanData.availability === null) {
         delete cleanData.availability;
@@ -37,6 +37,16 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
       if (cleanData.skills === null) {
         delete cleanData.skills;
       }
+      // Handle empty numeric fields
+      if (cleanData.hourly_rate === '' || isNaN(cleanData.hourly_rate)) {
+        delete cleanData.hourly_rate;
+      }
+      if (cleanData.max_hours_per_week === '' || isNaN(cleanData.max_hours_per_week)) {
+        cleanData.max_hours_per_week = 40; // Set default
+      }
+      // Remove empty strings from optional fields
+      if (cleanData.email === '') delete cleanData.email;
+      if (cleanData.phone === '') delete cleanData.phone;
 
       await onSave(cleanData);
     } catch (error) {
@@ -231,7 +241,7 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
                   min="0"
                   max="168"
                   value={formData.max_hours_per_week}
-                  onChange={(e) => handleInputChange('max_hours_per_week', parseInt(e.target.value))}
+                  onChange={(e) => handleInputChange('max_hours_per_week', e.target.value ? parseInt(e.target.value) : '')}
                   className="border-0 bg-transparent focus:ring-0"
                 />
               </div>
@@ -248,7 +258,7 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
                   min="0"
                   step="0.25"
                   value={formData.hourly_rate}
-                  onChange={(e) => handleInputChange('hourly_rate', parseFloat(e.target.value))}
+                  onChange={(e) => handleInputChange('hourly_rate', e.target.value ? parseFloat(e.target.value) : '')}
                   className="border-0 bg-transparent focus:ring-0"
                 />
               </div>
