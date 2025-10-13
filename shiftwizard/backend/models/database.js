@@ -180,7 +180,7 @@ class Database {
         const usersExists = await this.get("SELECT name FROM sqlite_master WHERE type='table' AND name='users'");
         if (usersExists) {
             if (!await columnExists('users', 'stripe_customer_id')) {
-                await this.run('ALTER TABLE users ADD COLUMN stripe_customer_id TEXT UNIQUE');
+                await this.run('ALTER TABLE users ADD COLUMN stripe_customer_id TEXT');
                 console.log('✅ Added stripe_customer_id column to users table');
             }
             if (!await columnExists('users', 'subscription_id')) {
