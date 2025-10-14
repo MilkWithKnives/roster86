@@ -18,7 +18,7 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
     position: "Server",
     hire_date: new Date().toISOString().split('T')[0],
     hourly_rate: "",  // Start empty to avoid NaN issues
-    max_hours_per_week: 40,
+    max_hours_per_week: "40",  // Use string to match input type
     availability: null,
     skills: null,
     status: "active"
@@ -73,18 +73,43 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
     try {
       // Clean up data - remove null/empty values that would fail validation
       const cleanData = { ...formData };
-      if (cleanData.availability === null) {
+      
+      // Handle availability - convert to JSON string if present, otherwise remove
+      if (cleanData.availability === null || cleanData.availability === undefined) {
         delete cleanData.availability;
+      } else if (typeof cleanData.availability === 'object') {
+        // Convert object to JSON string as expected by backend validation
+        cleanData.availability = JSON.stringify(cleanData.availability);
       }
-      if (cleanData.skills === null) {
+      
+      // Handle skills - convert to JSON string if present, otherwise remove  
+      if (cleanData.skills === null || cleanData.skills === undefined) {
         delete cleanData.skills;
+      } else if (typeof cleanData.skills === 'object') {
+        // Convert object to JSON string as expected by backend validation
+        cleanData.skills = JSON.stringify(cleanData.skills);
       }
-      // Handle empty numeric fields
-      if (cleanData.hourly_rate === '' || isNaN(cleanData.hourly_rate)) {
+      // Handle numeric fields - convert strings to numbers or remove if empty
+      if (cleanData.hourly_rate === '' || cleanData.hourly_rate === null || cleanData.hourly_rate === undefined) {
         delete cleanData.hourly_rate;
+      } else if (typeof cleanData.hourly_rate === 'string') {
+        const rate = parseFloat(cleanData.hourly_rate);
+        if (isNaN(rate)) {
+          delete cleanData.hourly_rate;
+        } else {
+          cleanData.hourly_rate = rate;
+        }
       }
-      if (cleanData.max_hours_per_week === '' || isNaN(cleanData.max_hours_per_week)) {
+      
+      if (cleanData.max_hours_per_week === '' || cleanData.max_hours_per_week === null || cleanData.max_hours_per_week === undefined) {
         cleanData.max_hours_per_week = 40; // Set default
+      } else if (typeof cleanData.max_hours_per_week === 'string') {
+        const hours = parseInt(cleanData.max_hours_per_week);
+        if (isNaN(hours)) {
+          cleanData.max_hours_per_week = 40;
+        } else {
+          cleanData.max_hours_per_week = hours;
+        }
       }
       // Remove empty strings from optional fields
       if (cleanData.email === '') delete cleanData.email;
@@ -315,7 +340,7 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
                   min="0"
                   max="168"
                   value={formData.max_hours_per_week}
-                  onChange={(e) => handleInputChange('max_hours_per_week', e.target.value ? parseInt(e.target.value) : '')}
+                  onChange={(e) => handleInputChange('max_hours_per_week', e.target.value)}
                   className="border-0 bg-transparent focus:ring-0"
                 />
               </div>
@@ -335,7 +360,7 @@ export default function EmployeeForm({ employee, onSave, onCancel }) {
                   min="0"
                   step="0.25"
                   value={formData.hourly_rate}
-                  onChange={(e) => handleInputChange('hourly_rate', e.target.value ? parseFloat(e.target.value) : '')}
+                  onChange={(e) => handleInputChange('hourly_rate', e.target.value)}
                   className="border-0 bg-transparent focus:ring-0"
                 />
               </div>

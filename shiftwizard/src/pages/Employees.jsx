@@ -64,6 +64,11 @@ export default function Employees() {
       loadEmployees();
     } catch (error) {
       console.error("Error saving employee:", error);
+      console.error("Error details:", error.response?.data);
+      if (error.response?.data?.details) {
+        console.error("Validation errors:", error.response.data.details);
+      }
+      console.error("Employee data sent:", employeeData);
     }
   };
 

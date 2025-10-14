@@ -73,21 +73,19 @@ router.post('/stripe', express.raw({ type: 'application/json' }), async (req, re
 async function handleCheckoutSessionCompleted(session) {
     console.log('Checkout session completed:', session.id);
 
-    const userId = session.metadata.userId;
+    const organizationId = session.metadata?.organizationId;
     const customerId = session.customer;
 
-    if (userId) {
-        // Update user with Stripe customer ID
-        await database.updateUserStripeCustomerId(parseInt(userId), customerId);
+    if (organizationId) {
+        // Update organization with Stripe customer ID if not already set
+        await database.run(
+            `UPDATE organizations 
+             SET stripe_customer_id = ?, updated_at = CURRENT_TIMESTAMP 
+             WHERE id = ? AND stripe_customer_id IS NULL`,
+            [customerId, parseInt(organizationId)]
+        );
 
-        // If subscription, update user's subscription status
-        if (session.mode === 'subscription' && session.subscription) {
-            await database.updateUserSubscription(parseInt(userId), {
-                subscriptionId: session.subscription,
-                status: 'active',
-                planName: session.metadata.planName
-            });
-        }
+        console.log(`Checkout completed for organization ${organizationId}`);
     }
 }
 
@@ -97,15 +95,43 @@ async function handleCheckoutSessionCompleted(session) {
 async function handleSubscriptionCreated(subscription) {
     console.log('Subscription created:', subscription.id);
 
-    // Get user by customer ID
-    const user = await database.getUserByStripeCustomerId(subscription.customer);
+    const organizationId = subscription.metadata?.organizationId;
+    
+    if (organizationId) {
+        // Determine plan type from price ID
+        const priceId = subscription.items.data[0]?.price?.id;
+        let planType = 'STARTER'; // default
+        
+        if (priceId === process.env.STRIPE_PROFESSIONAL_PRICE_ID) {
+            planType = 'PROFESSIONAL';
+        } else if (priceId === process.env.STRIPE_ENTERPRISE_PRICE_ID) {
+            planType = 'ENTERPRISE';
+        }
 
-    if (user) {
-        await database.updateUserSubscription(user.id, {
-            subscriptionId: subscription.id,
-            status: subscription.status,
-            planName: subscription.items.data[0]?.price?.id
-        });
+        await database.run(
+            `UPDATE organizations SET 
+             subscription_id = ?, 
+             subscription_status = ?, 
+             plan_type = ?,
+             updated_at = CURRENT_TIMESTAMP
+             WHERE id = ?`,
+            [subscription.id, subscription.status, planType, parseInt(organizationId)]
+        );
+
+        console.log(`Subscription created for organization ${organizationId}, plan: ${planType}`);
+    } else {
+        // Fallback: try to find organization by customer ID
+        const organization = await database.get(
+            'SELECT id FROM organizations WHERE stripe_customer_id = ?',
+            [subscription.customer]
+        );
+        
+        if (organization) {
+            await handleSubscriptionCreated({
+                ...subscription,
+                metadata: { organizationId: organization.id }
+            });
+        }
     }
 }
 
