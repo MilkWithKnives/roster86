@@ -26,7 +26,7 @@ export function SummaryBar() {
   };
 
   return (
-    <div className="bg-white border-b border-gray-200 px-6 py-3">
+    <div className="px-6 py-3 bg-white border-b border-gray-200">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6">
           {/* Conflicts */}
@@ -40,7 +40,7 @@ export function SummaryBar() {
               {errorCount === 0 ? 'No errors' : `${errorCount} error${errorCount > 1 ? 's' : ''}`}
             </span>
             {warningCount > 0 && (
-              <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+              <Badge variant="outline" className="text-yellow-700 border-yellow-200 bg-yellow-50">
                 {warningCount} warning{warningCount > 1 ? 's' : ''}
               </Badge>
             )}
