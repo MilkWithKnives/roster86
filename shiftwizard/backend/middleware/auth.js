@@ -20,7 +20,7 @@ const authenticateToken = async(req, res, next) => {
 
         // Get user from database to ensure they still exist
         const user = await database.get(
-            'SELECT id, email, full_name, role FROM users WHERE id = ?', [decoded.userId]
+            'SELECT id, email, full_name, role, organization_id, role_in_org FROM users WHERE id = ?', [decoded.userId]
         );
 
         if (!user) {
@@ -99,7 +99,7 @@ const optionalAuth = async(req, res, next) => {
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
         const user = await database.get(
-            'SELECT id, email, full_name, role FROM users WHERE id = ?', [decoded.userId]
+            'SELECT id, email, full_name, role, organization_id, role_in_org FROM users WHERE id = ?', [decoded.userId]
         );
         req.user = user || null;
     } catch {

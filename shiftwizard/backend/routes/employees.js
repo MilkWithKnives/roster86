@@ -44,8 +44,8 @@ const validateEmployeeUpdate = [
 router.get('/', requireRole(['admin', 'manager']), async(req, res) => {
     try {
         const { department, status, search, orderBy, limit } = req.query;
-        let sql = 'SELECT * FROM employees WHERE 1=1';
-        const params = [];
+        let sql = 'SELECT * FROM employees WHERE organization_id = ?';
+        const params = [req.user.organization_id || 1];
 
         if (department) {
             sql += ' AND department = ?';
@@ -121,7 +121,8 @@ router.get('/:id', async(req, res) => {
     }
     try {
         const employee = await database.get(
-            'SELECT * FROM employees WHERE id = ?', [req.params.id]
+            'SELECT * FROM employees WHERE id = ? AND organization_id = ?',
+            [req.params.id, req.user.organization_id || 1]
         );
 
         if (!employee) {
@@ -175,28 +176,32 @@ router.post('/', requireRole(['admin', 'manager']), validateEmployeeCreate, asyn
             status = 'active'
         } = req.body;
 
-        // Check if employee_id already exists
+        const orgId = req.user.organization_id || 1;
+
+        // Check if employee_id already exists within this organization
         const existingEmployee = await database.get(
-            'SELECT id FROM employees WHERE employee_id = ?', [employee_id]
+            'SELECT id FROM employees WHERE employee_id = ? AND organization_id = ?',
+            [employee_id, orgId]
         );
 
         if (existingEmployee) {
             return res.status(409).json({
                 error: 'Employee ID already exists',
-                message: 'An employee with this ID already exists'
+                message: 'An employee with this ID already exists in your organization'
             });
         }
 
-        // Check if email already exists (if provided)
+        // Check if email already exists within this organization (if provided)
         if (email) {
             const existingEmail = await database.get(
-                'SELECT id FROM employees WHERE email = ?', [email]
+                'SELECT id FROM employees WHERE email = ? AND organization_id = ?',
+                [email, orgId]
             );
 
             if (existingEmail) {
                 return res.status(409).json({
                     error: 'Email already exists',
-                    message: 'An employee with this email already exists'
+                    message: 'An employee with this email already exists in your organization'
                 });
             }
         }
@@ -207,11 +212,11 @@ router.post('/', requireRole(['admin', 'manager']), validateEmployeeCreate, asyn
 
         const result = await database.run(
             `INSERT INTO employees (
-        employee_id, full_name, email, phone, department, position, 
-        hire_date, hourly_rate, max_hours_per_week, availability, 
+        organization_id, employee_id, full_name, email, phone, department, position,
+        hire_date, hourly_rate, max_hours_per_week, availability,
         skills, status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
-                employee_id, full_name, email, phone, department, position,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
+                orgId, employee_id, full_name, email, phone, department, position,
                 hire_date, hourly_rate, max_hours_per_week, availabilityJson,
                 skillsJson, status
             ]
@@ -254,10 +259,12 @@ router.put('/:id', requireRole(['admin', 'manager']), validateEmployeeUpdate, as
         }
 
         const employeeId = req.params.id;
+        const orgId = req.user.organization_id || 1;
 
-        // Check if employee exists
+        // Check if employee exists within this organization
         const existingEmployee = await database.get(
-            'SELECT * FROM employees WHERE id = ?', [employeeId]
+            'SELECT * FROM employees WHERE id = ? AND organization_id = ?',
+            [employeeId, orgId]
         );
 
         if (!existingEmployee) {
@@ -267,32 +274,32 @@ router.put('/:id', requireRole(['admin', 'manager']), validateEmployeeUpdate, as
             });
         }
 
-        // Check if employee_id already exists (for different employee)
+        // Check if employee_id already exists within this organization (for different employee)
         if (req.body.employee_id && req.body.employee_id !== existingEmployee.employee_id) {
             const existingEmpId = await database.get(
-                'SELECT id FROM employees WHERE employee_id = ? AND id != ?',
-                [req.body.employee_id, employeeId]
+                'SELECT id FROM employees WHERE employee_id = ? AND id != ? AND organization_id = ?',
+                [req.body.employee_id, employeeId, orgId]
             );
 
             if (existingEmpId) {
                 return res.status(409).json({
                     error: 'Employee ID already exists',
-                    message: 'Another employee with this ID already exists'
+                    message: 'Another employee with this ID already exists in your organization'
                 });
             }
         }
 
-        // Check if email already exists (for different employee)
+        // Check if email already exists within this organization (for different employee)
         if (req.body.email && req.body.email !== existingEmployee.email) {
             const existingEmail = await database.get(
-                'SELECT id FROM employees WHERE email = ? AND id != ?',
-                [req.body.email, employeeId]
+                'SELECT id FROM employees WHERE email = ? AND id != ? AND organization_id = ?',
+                [req.body.email, employeeId, orgId]
             );
 
             if (existingEmail) {
                 return res.status(409).json({
                     error: 'Email already exists',
-                    message: 'Another employee with this email already exists'
+                    message: 'Another employee with this email already exists in your organization'
                 });
             }
         }
@@ -390,10 +397,12 @@ router.put('/:id', requireRole(['admin', 'manager']), validateEmployeeUpdate, as
 router.delete('/:id', requireRole(['admin', 'manager']), async(req, res) => {
     try {
         const employeeId = req.params.id;
+        const orgId = req.user.organization_id || 1;
 
-        // Check if employee exists
+        // Check if employee exists within this organization
         const existingEmployee = await database.get(
-            'SELECT id FROM employees WHERE id = ?', [employeeId]
+            'SELECT id FROM employees WHERE id = ? AND organization_id = ?',
+            [employeeId, orgId]
         );
 
         if (!existingEmployee) {

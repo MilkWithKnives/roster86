@@ -55,3 +55,6 @@ ssl/
 tmp/
 temp/
 .env*.local
+
+#Env_variables
+.env

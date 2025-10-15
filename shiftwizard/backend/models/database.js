@@ -214,14 +214,14 @@ class Database {
             'CREATE INDEX IF NOT EXISTS idx_organization_invites_token ON organization_invites(token)',
             'CREATE INDEX IF NOT EXISTS idx_billing_events_org ON billing_events(organization_id)',
             'CREATE INDEX IF NOT EXISTS idx_invoices_org ON invoices(organization_id)',
-            
+
             // Existing indexes
             'CREATE INDEX IF NOT EXISTS idx_employees_email ON employees(email)',
             'CREATE INDEX IF NOT EXISTS idx_employees_department ON employees(department)',
             'CREATE INDEX IF NOT EXISTS idx_assignments_date ON assignments(date)',
             'CREATE INDEX IF NOT EXISTS idx_assignments_employee ON assignments(employee_id)',
             'CREATE INDEX IF NOT EXISTS idx_assignments_schedule ON assignments(schedule_id)',
-            
+
             // Composite indexes for common queries
             'CREATE INDEX IF NOT EXISTS idx_employees_org_status ON employees(organization_id, status)',
             'CREATE INDEX IF NOT EXISTS idx_schedules_org_status ON schedules(organization_id, status)'
@@ -236,7 +236,7 @@ class Database {
 
     async runMigrations() {
         // Helper function to check if column exists
-        const columnExists = async (tableName, columnName) => {
+        const columnExists = async(tableName, columnName) => {
             const result = await this.all(`PRAGMA table_info(${tableName})`);
             return result.some(col => col.name === columnName);
         };
@@ -342,8 +342,7 @@ class Database {
 
     async updateUserStripeCustomerId(userId, stripeCustomerId) {
         return this.run(
-            'UPDATE users SET stripe_customer_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-            [stripeCustomerId, userId]
+            'UPDATE users SET stripe_customer_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [stripeCustomerId, userId]
         );
     }
 
@@ -351,19 +350,41 @@ class Database {
         const {
             subscriptionId,
             status,
-            planName
+            planName,
+            cancelAtPeriodEnd,
+            lastPaymentDate
         } = subscriptionData;
 
-        return this.run(
-            `UPDATE users
-             SET subscription_id = ?,
-                 subscription_status = ?,
-                 subscription_plan = ?,
-                 updated_at = CURRENT_TIMESTAMP
-             WHERE id = ?`,
-            [subscriptionId, status, planName, userId]
-        );
+        let sql = 'UPDATE users SET updated_at = CURRENT_TIMESTAMP';
+        let params = [];
+
+        if (subscriptionId !== undefined) {
+            sql += ', subscription_id = ?';
+            params.push(subscriptionId);
+        }
+        if (status !== undefined) {
+            sql += ', subscription_status = ?';
+            params.push(status);
+        }
+        if (planName !== undefined) {
+            sql += ', plan_name = ?';
+            params.push(planName);
+        }
+        if (cancelAtPeriodEnd !== undefined) {
+            sql += ', cancel_at_period_end = ?';
+            params.push(cancelAtPeriodEnd ? 1 : 0);
+        }
+        if (lastPaymentDate !== undefined) {
+            sql += ', last_payment_date = ?';
+            params.push(lastPaymentDate);
+        }
+
+        sql += ' WHERE id = ?';
+        params.push(userId);
+
+        return this.run(sql, params);
     }
+
 
     // Generic query methods
     get(sql, params = []) {

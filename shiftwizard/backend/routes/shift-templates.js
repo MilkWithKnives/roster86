@@ -20,8 +20,8 @@ const validateShiftTemplate = [
 router.get('/', async(req, res) => {
     try {
         const { department, is_active, orderBy, limit } = req.query;
-        let sql = 'SELECT * FROM shift_templates WHERE 1=1';
-        const params = [];
+        let sql = 'SELECT * FROM shift_templates WHERE organization_id = ?';
+        const params = [req.user.organization_id || 1];
 
         if (department) {
             sql += ' AND department = ?';
@@ -77,7 +77,8 @@ router.get('/', async(req, res) => {
 router.get('/:id', async(req, res) => {
     try {
         const template = await database.get(
-            'SELECT * FROM shift_templates WHERE id = ?', [req.params.id]
+            'SELECT * FROM shift_templates WHERE id = ? AND organization_id = ?',
+            [req.params.id, req.user.organization_id || 1]
         );
 
         if (!template) {
@@ -136,11 +137,11 @@ router.post('/', requireRole(['admin', 'manager']), validateShiftTemplate, async
 
         const result = await database.run(
             `INSERT INTO shift_templates (
-        name, description, start_time, end_time, break_duration,
+        organization_id, name, description, start_time, end_time, break_duration,
         required_skills, min_employees, max_employees, department,
         color, is_active
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
-                name, description, start_time, end_time, break_duration,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
+                req.user.organization_id || 1, name, description, start_time, end_time, break_duration,
                 requiredSkillsJson, min_employees, max_employees, department,
                 color, activeValue ? 1 : 0
             ]
@@ -182,7 +183,8 @@ router.put('/:id', requireRole(['admin', 'manager']), validateShiftTemplate, asy
 
         const templateId = req.params.id;
         const existingTemplate = await database.get(
-            'SELECT id FROM shift_templates WHERE id = ?', [templateId]
+            'SELECT id FROM shift_templates WHERE id = ? AND organization_id = ?',
+            [templateId, req.user.organization_id || 1]
         );
 
         if (!existingTemplate) {
@@ -254,7 +256,8 @@ router.delete('/:id', requireRole(['admin', 'manager']), async(req, res) => {
         const templateId = req.params.id;
 
         const existingTemplate = await database.get(
-            'SELECT id FROM shift_templates WHERE id = ?', [templateId]
+            'SELECT id FROM shift_templates WHERE id = ? AND organization_id = ?',
+            [templateId, req.user.organization_id || 1]
         );
 
         if (!existingTemplate) {

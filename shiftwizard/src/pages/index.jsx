@@ -6,6 +6,7 @@ import Schedules from "./Schedules";
 import Settings from "./Settings";
 import Pricing from "./Pricing";
 import PricingPublic from "./PricingPublic";
+import Purchase from "./Purchase";
 import Profile from "./Profile";
 import Login from "./Login";
 import Register from "./Register";
@@ -23,6 +24,7 @@ export default function Pages() {
             <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/pricing-public" element={<PricingPublic />} />
+                <Route path="/purchase" element={<ProtectedRoute><Purchase /></ProtectedRoute>} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/dashboard" element={<ProtectedRoute><Layout currentPageName="Dashboard"><Dashboard /></Layout></ProtectedRoute>} />

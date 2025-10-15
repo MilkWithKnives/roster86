@@ -25,7 +25,8 @@ router.get('/', async(req, res) => {
         const limitClause = limit ? `LIMIT ${limit}` : '';
 
         const schedules = await database.all(
-            `SELECT * FROM schedules ORDER BY ${orderClause} ${limitClause}`
+            `SELECT * FROM schedules WHERE organization_id = ? ORDER BY ${orderClause} ${limitClause}`,
+            [req.user.organization_id || 1]
         );
         res.json(schedules);
     } catch (error) {
@@ -37,7 +38,10 @@ router.get('/', async(req, res) => {
 // GET /api/schedules/:id - Allow all authenticated users to view individual schedules
 router.get('/:id', async(req, res) => {
     try {
-        const schedule = await database.get('SELECT * FROM schedules WHERE id = ?', [req.params.id]);
+        const schedule = await database.get(
+            'SELECT * FROM schedules WHERE id = ? AND organization_id = ?',
+            [req.params.id, req.user.organization_id || 1]
+        );
         if (!schedule) {
             return res.status(404).json({ error: 'Schedule not found' });
         }
@@ -84,8 +88,8 @@ router.post('/', requireRole(['admin', 'manager']), [
         const fairness_score = req.body.fairness_score || 0;
 
         const result = await database.run(
-            'INSERT INTO schedules (name, start_date, end_date, description, status, total_hours, coverage_percentage, fairness_score, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [name, start_date, end_date, description, status, total_hours, coverage_percentage, fairness_score, req.user.id]
+            'INSERT INTO schedules (organization_id, name, start_date, end_date, description, status, total_hours, coverage_percentage, fairness_score, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [req.user.organization_id || 1, name, start_date, end_date, description, status, total_hours, coverage_percentage, fairness_score, req.user.id]
         );
 
         const newSchedule = await database.get('SELECT * FROM schedules WHERE id = ?', [result.id]);
@@ -100,7 +104,10 @@ router.post('/', requireRole(['admin', 'manager']), [
 router.put('/:id', requireRole(['admin', 'manager']), async(req, res) => {
     try {
         // Get the existing schedule first
-        const existing = await database.get('SELECT * FROM schedules WHERE id = ?', [req.params.id]);
+        const existing = await database.get(
+            'SELECT * FROM schedules WHERE id = ? AND organization_id = ?',
+            [req.params.id, req.user.organization_id || 1]
+        );
         if (!existing) {
             return res.status(404).json({ error: 'Schedule not found' });
         }
@@ -131,7 +138,10 @@ router.put('/:id', requireRole(['admin', 'manager']), async(req, res) => {
 // DELETE /api/schedules/:id
 router.delete('/:id', requireRole(['admin', 'manager']), async(req, res) => {
     try {
-        await database.run('DELETE FROM schedules WHERE id = ?', [req.params.id]);
+        await database.run(
+            'DELETE FROM schedules WHERE id = ? AND organization_id = ?',
+            [req.params.id, req.user.organization_id || 1]
+        );
         res.json({ message: 'Schedule deleted successfully' });
     } catch (error) {
         console.error('Delete schedule error:', error);
