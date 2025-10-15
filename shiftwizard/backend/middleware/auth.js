@@ -1,7 +1,13 @@
 const jwt = require('jsonwebtoken');
 const database = require('../models/database');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+    console.error('❌ CRITICAL: JWT_SECRET environment variable is not set!');
+    console.error('Generate a secure secret with: openssl rand -hex 32');
+    process.exit(1);
+}
 
 // Middleware to verify JWT token
 const authenticateToken = async(req, res, next) => {

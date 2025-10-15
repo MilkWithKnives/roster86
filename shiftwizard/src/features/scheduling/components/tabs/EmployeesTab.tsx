@@ -89,7 +89,7 @@ export function EmployeesTab() {
         <div className="grid grid-cols-8 gap-2">
           <div></div>
           {days.map(day => (
-            <div key={day} className="text-center text-sm font-medium capitalize">
+            <div key={day} className="text-sm font-medium text-center capitalize">
               {day.slice(0, 3)}
             </div>
           ))}
@@ -97,7 +97,7 @@ export function EmployeesTab() {
 
         {timeSlots.map(time => (
           <div key={time} className="grid grid-cols-8 gap-2">
-            <div className="text-sm text-gray-600 self-center">{time}</div>
+            <div className="self-center text-sm text-gray-600">{time}</div>
             {days.map(day => {
               const dayAvailability = employee.availability[day] || [];
               const isAvailable = dayAvailability.some(slot => 
@@ -107,6 +107,9 @@ export function EmployeesTab() {
               return (
                 <button
                   key={`${day}-${time}`}
+                  type="button"
+                  aria-label={`Toggle availability for ${day} at ${time}`}
+                  title={`Toggle availability for ${day} at ${time}`}
                   className={`w-8 h-8 rounded border-2 ${
                     isAvailable 
                       ? 'bg-green-500 border-green-600' 
@@ -137,7 +140,7 @@ export function EmployeesTab() {
         <CardContent>
           {/* Add New Employee */}
           {isAddingEmployee ? (
-            <div className="space-y-4 p-4 border rounded-lg mb-6">
+            <div className="p-4 mb-6 space-y-4 border rounded-lg">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="employeeName">Name</Label>
@@ -256,7 +259,7 @@ export function EmployeesTab() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
+                      <div className="flex items-center justify-center w-12 h-12 font-semibold text-white rounded-full bg-gradient-to-br from-blue-500 to-purple-500">
                         {employee.name.charAt(0).toUpperCase()}
                       </div>
                       <div>
@@ -281,6 +284,8 @@ export function EmployeesTab() {
                       <Button
                         size="sm"
                         variant="ghost"
+                        aria-label={`Edit ${employee.name}`}
+                        title={`Edit ${employee.name}`}
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedEmployee(employee.id);
@@ -291,6 +296,8 @@ export function EmployeesTab() {
                       <Button
                         size="sm"
                         variant="ghost"
+                        aria-label={`Delete ${employee.name}`}
+                        title={`Delete ${employee.name}`}
                         onClick={(e) => {
                           e.stopPropagation();
                           removeEmployee(employee.id);
@@ -310,9 +317,9 @@ export function EmployeesTab() {
           </div>
 
           {employees.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
+            <div className="py-8 text-center text-gray-500">
               <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium mb-2">No employees added</p>
+              <p className="mb-2 text-lg font-medium">No employees added</p>
               <p className="text-sm">Add your first employee to start building schedules</p>
             </div>
           )}
@@ -341,7 +348,7 @@ export function EmployeesTab() {
               
               <TabsContent value="availability" className="mt-6">
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                  <div className="flex items-center gap-2 mb-4 text-sm text-gray-600">
                     <Clock className="w-4 h-4" />
                     Click time slots to toggle availability. Green = Available, Gray = Unavailable
                   </div>
@@ -382,7 +389,7 @@ export function EmployeesTab() {
                       {['Morning', 'Afternoon', 'Evening', 'Night'].map(shift => (
                         <button
                           key={shift}
-                          className="px-3 py-1 rounded-full text-sm border bg-gray-100 border-gray-300 text-gray-700"
+                          className="px-3 py-1 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-full"
                         >
                           {shift}
                         </button>
@@ -393,9 +400,9 @@ export function EmployeesTab() {
               </TabsContent>
               
               <TabsContent value="schedule" className="mt-6">
-                <div className="text-center py-8 text-gray-500">
+                <div className="py-8 text-center text-gray-500">
                   <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-medium mb-2">Schedule Preview</p>
+                  <p className="mb-2 text-lg font-medium">Schedule Preview</p>
                   <p className="text-sm">This will show how the employee fits into your schedules</p>
                 </div>
               </TabsContent>

@@ -165,7 +165,7 @@ final_message: |
 
   🔐 SSH Access: ssh roster86@YOUR_SERVER_IP
   🌐 Web Access: https://YOUR_SERVER_IP
-  📊 Admin Login: papichulo@roster86.com / fuck
+  📊 Admin Login: admin@roster86.com / CHANGE_DEFAULT_PASSWORD
 
   📋 Next Steps:
   1. Point your domain to this server IP

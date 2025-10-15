@@ -9,7 +9,11 @@ const router = express.Router();
 // Validation middleware
 const validateRegistration = [
     body('email').isEmail().normalizeEmail(),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+    body('password')
+        .isLength({ min: 8 })
+        .withMessage('Password must be at least 8 characters')
+        .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, 'i')
+        .withMessage('Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character'),
     body('full_name').trim().isLength({ min: 2 }).withMessage('Full name is required'),
     body('role').optional().isIn(['admin', 'manager', 'employee']).withMessage('Invalid role')
 ];

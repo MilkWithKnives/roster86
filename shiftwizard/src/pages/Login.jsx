@@ -23,8 +23,8 @@ export default function Login() {
     }
     
     // Password validation
-    if (!password || password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters long';
+    if (!password || password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters long';
     }
     
     setErrors(newErrors);
