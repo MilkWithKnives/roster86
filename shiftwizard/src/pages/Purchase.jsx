@@ -27,8 +27,8 @@ const plans = {
       "No custom integrations"
     ],
     stripePriceId: {
-      monthly: process.env.VITE_STRIPE_STARTER_MONTHLY || 'price_starter_monthly',
-      yearly: process.env.VITE_STRIPE_STARTER_YEARLY || 'price_starter_yearly'
+      monthly: import.meta.env.VITE_STRIPE_STARTER_MONTHLY || 'price_starter_monthly',
+      yearly: import.meta.env.VITE_STRIPE_STARTER_YEARLY || 'price_starter_yearly'
     }
   },
   professional: {
@@ -51,8 +51,8 @@ const plans = {
       "Limited custom integrations"
     ],
     stripePriceId: {
-      monthly: process.env.VITE_STRIPE_PRO_MONTHLY || 'price_pro_monthly',
-      yearly: process.env.VITE_STRIPE_PRO_YEARLY || 'price_pro_yearly'
+      monthly: import.meta.env.VITE_STRIPE_PRO_MONTHLY || 'price_pro_monthly',
+      yearly: import.meta.env.VITE_STRIPE_PRO_YEARLY || 'price_pro_yearly'
     },
     popular: true
   },
@@ -75,8 +75,8 @@ const plans = {
     ],
     limitations: [],
     stripePriceId: {
-      monthly: process.env.VITE_STRIPE_ENTERPRISE_MONTHLY || 'price_enterprise_monthly',
-      yearly: process.env.VITE_STRIPE_ENTERPRISE_YEARLY || 'price_enterprise_yearly'
+      monthly: import.meta.env.VITE_STRIPE_ENTERPRISE_MONTHLY || 'price_enterprise_monthly',
+      yearly: import.meta.env.VITE_STRIPE_ENTERPRISE_YEARLY || 'price_enterprise_yearly'
     }
   }
 };
