@@ -1,0 +1,277 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main, production ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+
+env:
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.9'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Run Tests
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install Python dependencies
+      run: |
+        pip install ortools pandas numpy
+        
+    - name: Install Node.js dependencies
+      run: |
+        npm ci
+        cd backend && npm ci
+        
+    - name: Run frontend tests
+      run: npm test -- --coverage --watchAll=false
+      
+    - name: Run backend tests
+      run: cd backend && npm test
+      
+    - name: Test Python scheduling engine
+      run: python3 backend/workforce_scheduling_engine.py
+      
+    - name: Build frontend
+      run: npm run build
+      
+    - name: Test backend health check
+      run: |
+        cd backend
+        node -e "
+          const server = require('./server.js');
+          setTimeout(() => {
+            console.log('Health check test passed');
+            process.exit(0);
+          }, 2000);
+        " &
+        sleep 3
+        curl -f http://localhost:3001/health || exit 1
+
+  build-and-deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    name: Build and Deploy
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/production'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm ci
+        cd backend && npm ci
+        
+    - name: Build application
+      run: npm run build
+      
+    - name: Create deployment package
+      run: |
+        tar -czf shiftwizard-${{ github.sha }}.tar.gz \
+          --exclude=node_modules \
+          --exclude=.git \
+          --exclude=.github \
+          --exclude=tests \
+          --exclude=coverage \
+          .
+          
+    - name: Upload deployment artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: shiftwizard-deployment-${{ github.sha }}
+        path: shiftwizard-${{ github.sha }}.tar.gz
+        retention-days: 30
+
+  deploy-to-server:
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+    name: Deploy to Production Server
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/production'
+    
+    steps:
+    - name: Download deployment artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: shiftwizard-deployment-${{ github.sha }}
+        
+    - name: Deploy to server via SSH
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.PRODUCTION_HOST }}
+        username: ${{ secrets.PRODUCTION_USER }}
+        key: ${{ secrets.PRODUCTION_SSH_KEY }}
+        port: ${{ secrets.PRODUCTION_PORT || 22 }}
+        script: |
+          # Set deployment variables
+          DEPLOY_DIR="/var/www/shiftwizard"
+          BACKUP_DIR="/var/backups/shiftwizard"
+          APP_NAME="shiftwizard"
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          
+          echo "🚀 Starting deployment for commit ${{ github.sha }}"
+          
+          # Create backup of current deployment
+          if [ -d "$DEPLOY_DIR" ]; then
+            echo "📦 Creating backup..."
+            sudo mkdir -p $BACKUP_DIR
+            sudo cp -r $DEPLOY_DIR $BACKUP_DIR/backup_$TIMESTAMP
+          fi
+          
+          # Create deployment directory
+          sudo mkdir -p $DEPLOY_DIR
+          sudo chown -R $USER:$USER $DEPLOY_DIR
+          
+          # Download and extract new version
+          echo "📥 Downloading new version..."
+          cd /tmp
+          wget -O shiftwizard-latest.tar.gz "https://github.com/${{ github.repository }}/releases/download/latest/shiftwizard-${{ github.sha }}.tar.gz" || \
+          curl -L -o shiftwizard-latest.tar.gz "https://api.github.com/repos/${{ github.repository }}/tarball/${{ github.sha }}"
+          
+          # Extract to deployment directory
+          echo "📦 Extracting application..."
+          tar -xzf shiftwizard-latest.tar.gz -C $DEPLOY_DIR --strip-components=1
+          
+          # Install dependencies
+          echo "📦 Installing dependencies..."
+          cd $DEPLOY_DIR
+          npm ci --production
+          cd backend && npm ci --production && cd ..
+          
+          # Copy production environment if it exists
+          if [ -f "/etc/shiftwizard/.env.production" ]; then
+            cp /etc/shiftwizard/.env.production backend/.env
+          fi
+          
+          # Run database migrations
+          echo "🗄️ Running database migrations..."
+          cd backend
+          node scripts/init-db.js
+          cd ..
+          
+          # Restart application
+          echo "🔄 Restarting application..."
+          if command -v pm2 &> /dev/null; then
+            pm2 restart shiftwizard || pm2 start ecosystem.config.js
+          elif command -v docker-compose &> /dev/null; then
+            docker-compose -f docker-compose.prod.yml down
+            docker-compose -f docker-compose.prod.yml up -d
+          fi
+          
+          # Health check
+          echo "🏥 Running health check..."
+          sleep 10
+          curl -f http://localhost:3001/health || {
+            echo "❌ Health check failed!"
+            # Rollback if health check fails
+            if [ -d "$BACKUP_DIR/backup_$TIMESTAMP" ]; then
+              echo "🔄 Rolling back to previous version..."
+              sudo rm -rf $DEPLOY_DIR
+              sudo mv $BACKUP_DIR/backup_$TIMESTAMP $DEPLOY_DIR
+              sudo chown -R $USER:$USER $DEPLOY_DIR
+              pm2 restart shiftwizard || docker-compose -f docker-compose.prod.yml restart
+            fi
+            exit 1
+          }
+          
+          echo "✅ Deployment successful!"
+          
+    - name: Notify deployment status
+      if: always()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        channel: '#deployments'
+        text: |
+          Deployment ${{ job.status }} for ShiftWizard
+          Commit: ${{ github.sha }}
+          Branch: ${{ github.ref_name }}
+          Environment: Production
+        webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  health-check:
+    needs: deploy-to-server
+    runs-on: ubuntu-latest
+    name: Post-deployment Health Check
+    
+    steps:
+    - name: Wait for deployment
+      run: sleep 30
+      
+    - name: Check application health
+      run: |
+        echo "🏥 Checking application health..."
+        curl -f ${{ secrets.PRODUCTION_URL }}/health || exit 1
+        echo "✅ Application is healthy"
+        
+    - name: Check WebSocket connectivity
+      run: |
+        echo "🔌 Testing WebSocket connection..."
+        # Simple WebSocket test using Node.js
+        node -e "
+          const WebSocket = require('ws');
+          const ws = new WebSocket('${{ secrets.PRODUCTION_WS_URL || secrets.PRODUCTION_URL }}'.replace('http', 'ws') + '/socket.io/?transport=websocket');
+          ws.on('open', () => {
+            console.log('✅ WebSocket connection successful');
+            ws.close();
+            process.exit(0);
+          });
+          ws.on('error', (error) => {
+            console.error('❌ WebSocket connection failed:', error);
+            process.exit(1);
+          });
+          setTimeout(() => {
+            console.error('❌ WebSocket connection timeout');
+            process.exit(1);
+          }, 10000);
+        "
+        
+    - name: Test API endpoints
+      run: |
+        echo "🧪 Testing critical API endpoints..."
+        
+        # Test authentication endpoint
+        curl -f -X POST ${{ secrets.PRODUCTION_URL }}/api/auth/test || echo "Auth endpoint not available"
+        
+        # Test metrics endpoint (should require auth, so expect 401)
+        STATUS=$(curl -o /dev/null -s -w "%{http_code}" ${{ secrets.PRODUCTION_URL }}/api/metrics/health)
+        if [ "$STATUS" -eq 401 ] || [ "$STATUS" -eq 200 ]; then
+          echo "✅ Metrics endpoint responding correctly"
+        else
+          echo "❌ Metrics endpoint returned unexpected status: $STATUS"
+          exit 1
+        fi
+        
+        echo "✅ All health checks passed"

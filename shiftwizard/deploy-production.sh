@@ -37,6 +37,11 @@ echo -e "${YELLOW}📦 Installing Node.js 18...${NC}"
 curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
 sudo apt install -y nodejs
 
+# Install Python and pip for scheduling algorithm
+echo -e "${YELLOW}🐍 Installing Python for scheduling engine...${NC}"
+sudo apt install -y python3 python3-pip
+pip3 install ortools pandas numpy
+
 # Install PM2
 echo -e "${YELLOW}⚙️ Installing PM2...${NC}"
 sudo npm install -g pm2
@@ -71,8 +76,8 @@ npm run build
 
 # Create environment file
 echo -e "${YELLOW}⚙️ Setting up environment...${NC}"
-if [ ! -f ".env" ]; then
-    cat > .env << EOF
+if [ ! -f "backend/.env" ]; then
+    cat > backend/.env << EOF
 # Server Configuration
 NODE_ENV=production
 PORT=3001
@@ -84,6 +89,12 @@ DATABASE_URL=./database.sqlite
 # JWT Security (Generated)
 JWT_SECRET=$(openssl rand -hex 32)
 JWT_EXPIRES_IN=24h
+
+# OpenAI Configuration (REQUIRED for AI suggestions)
+OPENAI_API_KEY=your_openai_api_key_here
+
+# WebSocket Configuration
+REAL_TIME_UPDATES_ENABLED=true
 
 # Stripe Configuration (REQUIRED - Update these!)
 STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key_here
@@ -99,7 +110,9 @@ STRIPE_ENTERPRISE_PRICE_ID=price_enterprise_monthly
 STRIPE_ENTERPRISE_YEARLY_PRICE_ID=price_enterprise_yearly
 EOF
     echo -e "${GREEN}✅ Created .env file with generated JWT secret${NC}"
-    echo -e "${YELLOW}⚠️  IMPORTANT: Update Stripe keys in .env file!${NC}"
+    echo -e "${YELLOW}⚠️  IMPORTANT: Update the following in backend/.env file:${NC}"
+    echo -e "${YELLOW}   - OPENAI_API_KEY (for AI scheduling suggestions)${NC}"
+    echo -e "${YELLOW}   - Stripe keys for payment processing${NC}"
 fi
 
 # Initialize database
@@ -164,6 +177,21 @@ server {
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
         proxy_cache_bypass \$http_upgrade;
+    }
+    
+    # WebSocket Support for Socket.IO
+    location /socket.io/ {
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_connect_timeout 7d;
+        proxy_send_timeout 7d;
+        proxy_read_timeout 7d;
     }
     
     # Webhooks
