@@ -72,6 +72,7 @@
         "react-router-dom": "^7.2.0",
         "recharts": "^2.15.1",
         "redis": "^5.8.3",
+        "socket.io-client": "^4.8.1",
         "sonner": "^2.0.1",
         "speakeasy": "^2.0.0",
         "tailwind-merge": "^3.0.2",

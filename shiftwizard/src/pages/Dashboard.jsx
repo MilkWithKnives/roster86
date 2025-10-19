@@ -8,7 +8,7 @@ import {
   TrendingUp
 } from "lucide-react";
 
-import StatsOverview from "../components/dashboard/StatsOverview";
+import LiveMetricsDashboard from "../components/dashboard/LiveMetricsDashboard";
 import RecentSchedules from "../components/dashboard/RecentSchedules";
 import QuickActions from "../components/dashboard/QuickActions";
 import UpcomingShifts from "../components/dashboard/UpcomingShifts";
@@ -74,8 +74,8 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Stats Overview */}
-      <StatsOverview stats={stats} isLoading={isLoading} />
+      {/* Live Metrics Dashboard */}
+      <LiveMetricsDashboard />
 
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Main Content Area */}

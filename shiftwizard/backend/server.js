@@ -3,9 +3,12 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const http = require('http');
+const { Server } = require('socket.io');
 require('dotenv').config();
 
 const database = require('./models/database');
+const MetricsService = require('./services/metricsService');
 const authRoutes = require('./routes/auth');
 const employeeRoutes = require('./routes/employees');
 const shiftTemplateRoutes = require('./routes/shift-templates');
@@ -14,9 +17,30 @@ const assignmentRoutes = require('./routes/assignments');
 const appSettingsRoutes = require('./routes/app-settings');
 const integrationRoutes = require('./routes/integrations');
 const paymentRoutes = require('./routes/payments');
+const metricsRoutes = require('./routes/metrics');
+const schedulingRoutes = require('./routes/scheduling');
+const suggestionsRoutes = require('./routes/suggestions');
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 3001;
+
+// Initialize Socket.IO with CORS configuration
+const io = new Server(server, {
+    cors: {
+        origin: [
+            ...(process.env.NODE_ENV === 'development' ? [
+                'http://localhost:5173',
+                'http://localhost:5174',
+                'http://localhost:3000'
+            ] : []),
+            'https://roster86.com',
+            'https://www.roster86.com',
+            process.env.FRONTEND_URL
+        ].filter(Boolean),
+        credentials: true
+    }
+});
 
 // ⚠️ IMPORTANT: Stripe webhooks must be registered BEFORE express.json() middleware
 // because Stripe needs the raw request body to verify signatures
@@ -82,6 +106,9 @@ app.use('/api/schedules', scheduleRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/app-settings', appSettingsRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/metrics', metricsRoutes);
+app.use('/api/scheduling', schedulingRoutes);
+app.use('/api/suggestions', suggestionsRoutes);
 app.use('/api', integrationRoutes);
 
 // Error handling middleware
@@ -109,6 +136,30 @@ app.use((err, req, res, next) => {
     });
 });
 
+// Socket.IO connection handling
+io.on('connection', (socket) => {
+    console.log(`🔌 Client connected: ${socket.id}`);
+
+    // Join dashboard room for real-time metrics
+    socket.on('join-dashboard', () => {
+        socket.join('dashboard');
+        console.log(`📊 Client ${socket.id} joined dashboard room`);
+    });
+
+    // Join scheduling room for algorithm updates
+    socket.on('join-scheduling', () => {
+        socket.join('scheduling');
+        console.log(`⚙️ Client ${socket.id} joined scheduling room`);
+    });
+
+    socket.on('disconnect', () => {
+        console.log(`🔌 Client disconnected: ${socket.id}`);
+    });
+});
+
+// Make io available to routes
+app.set('io', io);
+
 // 404 handler
 app.use('*', (req, res) => {
     res.status(404).json({
@@ -124,11 +175,28 @@ async function startServer() {
         await database.init();
         console.log('✅ Database initialized successfully');
 
-        app.listen(PORT, '0.0.0.0', () => {
+        server.listen(PORT, '0.0.0.0', () => {
             console.log(`🚀 ShiftWizard Backend running on port ${PORT}`);
             console.log(`📊 Health check: http://localhost:${PORT}/health`);
+            console.log(`🔌 WebSocket server enabled`);
             console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5175'}`);
             console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+
+            // Initialize metrics service for periodic updates
+            const metricsService = new MetricsService(io);
+            
+            // Update metrics every 30 seconds for real-time dashboard
+            setInterval(async () => {
+                try {
+                    if (io.engine.clientsCount > 0) {
+                        await metricsService.calculateMetrics(1); // Default org ID
+                    }
+                } catch (error) {
+                    console.error('Periodic metrics update error:', error);
+                }
+            }, 30000);
+            
+            console.log(`📊 Real-time metrics enabled (30s intervals)`);
         });
     } catch (error) {
         console.error('❌ Failed to start server:', error);

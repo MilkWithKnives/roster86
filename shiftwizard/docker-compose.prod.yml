@@ -1,0 +1,155 @@
+version: '3.8'
+
+services:
+  # Main Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: shiftwizard-app
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+    env_file:
+      - ./backend/.env.production
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./logs:/var/log/shiftwizard
+      - ./uploads:/app/backend/uploads
+      - ./data/backups:/app/backups
+    networks:
+      - shiftwizard-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: shiftwizard-postgres
+    environment:
+      POSTGRES_DB: shiftwizard_prod
+      POSTGRES_USER: shiftwizard
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure-password-change-this}
+      POSTGRES_INITDB_ARGS: --encoding=UTF-8 --lc-collate=en_US.UTF-8 --lc-ctype=en_US.UTF-8
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+      - ./data/backups:/backups
+    ports:
+      - "5432:5432"
+    networks:
+      - shiftwizard-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shiftwizard -d shiftwizard_prod"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Redis for Session Storage and Caching
+  redis:
+    image: redis:7-alpine
+    container_name: shiftwizard-redis
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redis-password-change-this} --appendonly yes
+    volumes:
+      - redis_data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    ports:
+      - "6379:6379"
+    networks:
+      - shiftwizard-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: shiftwizard-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.prod.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - app
+    networks:
+      - shiftwizard-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backup Service
+  backup:
+    build:
+      context: .
+      dockerfile: Dockerfile.backup
+    container_name: shiftwizard-backup
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: shiftwizard_prod
+      POSTGRES_USER: shiftwizard
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure-password-change-this}
+    volumes:
+      - ./data/backups:/backups
+      - postgres_data:/var/lib/postgresql/data:ro
+    depends_on:
+      - postgres
+    networks:
+      - shiftwizard-network
+    restart: unless-stopped
+    command: |
+      sh -c "
+        while true; do
+          echo 'Creating backup...'
+          pg_dump -h postgres -U shiftwizard -d shiftwizard_prod > /backups/backup_$$(date +%Y%m%d_%H%M%S).sql
+          find /backups -name '*.sql' -mtime +30 -delete
+          sleep 86400
+        done
+      "
+
+  # Monitoring (Optional)
+  monitoring:
+    image: prom/node-exporter:latest
+    container_name: shiftwizard-monitoring
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - shiftwizard-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  shiftwizard-network:
+    driver: bridge
