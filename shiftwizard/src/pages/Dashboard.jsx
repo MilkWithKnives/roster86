@@ -12,6 +12,7 @@ import LiveMetricsDashboard from "../components/dashboard/LiveMetricsDashboard";
 import RecentSchedules from "../components/dashboard/RecentSchedules";
 import QuickActions from "../components/dashboard/QuickActions";
 import UpcomingShifts from "../components/dashboard/UpcomingShifts";
+import SchedulingWorkflow from "../components/scheduling/SchedulingWorkflow";
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -23,7 +24,9 @@ export default function Dashboard() {
   const [recentSchedules, setRecentSchedules] = useState([]);
   const [upcomingShifts, setUpcomingShifts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null); // Added error state
+  const [error, setError] = useState(null);
+  const [activeSchedule, setActiveSchedule] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     loadDashboardData();
@@ -35,12 +38,22 @@ export default function Dashboard() {
       setError(null); // Clear previous errors on retry
       
       // Load basic stats
-      const [employees, schedules, templates, assignments] = await Promise.all([
+      const [employees, schedules, templates, assignments, userResponse] = await Promise.all([
         Employee.list(),
         Schedule.list('-created_date', 5),
         ShiftTemplate.list(),
-        Assignment.list('-created_date', 10)
+        Assignment.list('-created_date', 10),
+        fetch('/api/auth/me').then(r => r.json()).catch(() => ({ data: null }))
       ]);
+
+      // Set current user and active schedule
+      if (userResponse.data) {
+        setCurrentUser(userResponse.data);
+      }
+      
+      // Find active schedule
+      const active = schedules.find(s => s.status === 'active') || schedules[0];
+      setActiveSchedule(active);
 
       setStats({
         totalEmployees: employees.filter(e => e.active !== false).length,
@@ -60,6 +73,14 @@ export default function Dashboard() {
     }
   };
 
+  const handleScheduleComplete = async (results, appliedSuggestion) => {
+    console.log('✅ Schedule completed on dashboard:', { results, appliedSuggestion });
+    // Reload dashboard data to reflect new schedule
+    await loadDashboardData();
+  };
+
+  const canManageSchedules = currentUser?.role === 'admin' || currentUser?.role === 'manager';
+
   return (
     <div className="space-y-8">
       {/* Error Display */}
@@ -76,6 +97,16 @@ export default function Dashboard() {
 
       {/* Live Metrics Dashboard */}
       <LiveMetricsDashboard />
+
+      {/* Intelligent Scheduling Workflow - Only show for managers/admins */}
+      {canManageSchedules && (
+        <div className="space-y-6">
+          <SchedulingWorkflow 
+            scheduleId={activeSchedule?.id}
+            onScheduleComplete={handleScheduleComplete}
+          />
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Main Content Area */}

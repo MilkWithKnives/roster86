@@ -3,6 +3,7 @@ import Dashboard from "./Dashboard";
 import Employees from "./Employees";
 import ShiftTemplates from "./ShiftTemplates";
 import Schedules from "./Schedules";
+import Scheduling from "./Scheduling";
 import Settings from "./Settings";
 import Pricing from "./Pricing";
 import PricingPublic from "./PricingPublic";
@@ -31,6 +32,7 @@ export default function Pages() {
                 <Route path="/employees" element={<RoleProtectedRoute allowedRoles={['admin', 'manager']}><Layout currentPageName="Employees"><Employees /></Layout></RoleProtectedRoute>} />
                 <Route path="/shifttemplates" element={<RoleProtectedRoute allowedRoles={['admin', 'manager']}><Layout currentPageName="ShiftTemplates"><ShiftTemplates /></Layout></RoleProtectedRoute>} />
                 <Route path="/schedules" element={<ProtectedRoute><Layout currentPageName="Schedules"><Schedules /></Layout></ProtectedRoute>} />
+                <Route path="/scheduling" element={<ProtectedRoute><Layout currentPageName="Scheduling"><Scheduling /></Layout></ProtectedRoute>} />
                 <Route path="/settings" element={<RoleProtectedRoute allowedRoles={['admin']}><Layout currentPageName="Settings"><Settings /></Layout></RoleProtectedRoute>} />
                 <Route path="/pricing" element={<ProtectedRoute><Layout currentPageName="Pricing"><Pricing /></Layout></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><Layout currentPageName="Profile"><Profile /></Layout></ProtectedRoute>} />

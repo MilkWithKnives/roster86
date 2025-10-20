@@ -7,7 +7,9 @@ const http = require('http');
 const { Server } = require('socket.io');
 require('dotenv').config();
 
-const database = require('./models/database');
+// Database configuration manager
+const dbConfig = require('./config/database');
+const database = dbConfig.getDatabase();
 const MetricsService = require('./services/metricsService');
 const authRoutes = require('./routes/auth');
 const employeeRoutes = require('./routes/employees');
@@ -171,6 +173,10 @@ app.use('*', (req, res) => {
 // Start server
 async function startServer() {
     try {
+        // Show database info
+        const dbInfo = dbConfig.getDatabaseInfo();
+        console.log(`🗄️ Database: ${dbInfo.type} (${dbInfo.connection})`);
+        
         // Initialize database first
         await database.init();
         console.log('✅ Database initialized successfully');
