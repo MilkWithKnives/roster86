@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Calendar, Users, Clock, Brain, Activity, Settings, Zap } from "lucide-react";
+import { Calendar, Users, Activity, Settings, Zap, Clock } from "lucide-react";
 import LiveMetricsDashboard from "@/components/dashboard/LiveMetricsDashboard";
 import SchedulingWorkflow from "@/components/scheduling/SchedulingWorkflow";
 import { useWebSocket } from "@/contexts/WebSocketContext";

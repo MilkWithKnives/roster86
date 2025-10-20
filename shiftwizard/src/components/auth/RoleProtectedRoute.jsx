@@ -36,7 +36,7 @@ const RoleProtectedRoute = ({ children, allowedRoles = [] }) => {
             Access Denied
           </h2>
           <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>
-            You don't have permission to access this page. Required role(s): {allowedRoles.join(', ')}
+            You don&apos;t have permission to access this page. Required role(s): {allowedRoles.join(', ')}
           </p>
           <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
             Your role: {user?.role || 'Unknown'}

@@ -70,6 +70,8 @@ class EnterpriseAuthMiddleware {
 
         return async (req, res, next) => {
             try {
+                // License validation context (available across scopes)
+                let licenseValidation = { valid: true, features: {} };
                 // Extract token from header
                 const token = this.extractToken(req);
                 if (!token) {
@@ -144,7 +146,7 @@ class EnterpriseAuthMiddleware {
                     }
 
                     // Validate license
-                    const licenseValidation = await this.validateLicense(organization);
+                    licenseValidation = await this.validateLicense(organization);
                     if (!licenseValidation.valid) {
                         return res.status(403).json({
                             success: false,
@@ -227,7 +229,7 @@ class EnterpriseAuthMiddleware {
                 };
 
                 if (organization) {
-                    req.organization = {
+                req.organization = {
                         id: organization.id,
                         name: organization.name,
                         slug: organization.slug,
@@ -259,7 +261,7 @@ class EnterpriseAuthMiddleware {
     /**
      * API Key authentication middleware
      */
-    authenticateApiKey(options = {}) {
+    authenticateApiKey() {
         return async (req, res, next) => {
             try {
                 const apiKey = req.headers['x-api-key'];

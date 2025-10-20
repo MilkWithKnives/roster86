@@ -164,7 +164,7 @@ Return your response as JSON in this exact format:
     /**
      * Gather context data for AI analysis
      */
-    async gatherContextData(organizationId, coverageGaps) {
+    async gatherContextData(organizationId) {
         try {
             // Get available employees with their current schedules
             const employees = await database.all(`

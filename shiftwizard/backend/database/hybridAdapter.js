@@ -28,7 +28,7 @@ class HybridDatabaseAdapter {
                 console.log('✅ Using PostgreSQL database');
                 return;
             } catch (error) {
-                console.log('⚠️  PostgreSQL not available, falling back to SQLite');
+                console.log('⚠️  PostgreSQL not available, falling back to SQLite:', error.message);
             }
         }
 
@@ -421,23 +421,24 @@ class HybridDatabaseAdapter {
         const command = text.trim().toUpperCase().split(' ')[0];
         
         switch (command) {
-            case 'SELECT':
+            case 'SELECT': {
                 const rows = await this.all(text, params);
                 return { rows, rowCount: rows.length };
-            
+            }
             case 'INSERT':
             case 'UPDATE':
-            case 'DELETE':
+            case 'DELETE': {
                 const result = await this.run(text, params);
                 return { 
                     rows: [], 
                     rowCount: result.changes,
                     lastID: result.lastID 
                 };
-            
-            default:
+            }
+            default: {
                 await this.run(text, params);
                 return { rows: [], rowCount: 0 };
+            }
         }
     }
 
@@ -497,7 +498,7 @@ class HybridDatabaseAdapter {
 
         const { returning = false } = options;
         const setClause = this.buildSetClause(updates);
-        const whereClause = this.buildWhereClause(conditions, setClause.values.length);
+        const whereClause = this.buildWhereClause(conditions);
         
         let query = `UPDATE ${tableName} SET ${setClause.text} WHERE ${whereClause.text}`;
         const result = await this.run(query, [...setClause.values, ...whereClause.values]);
@@ -512,18 +513,15 @@ class HybridDatabaseAdapter {
     /**
      * Build WHERE clause
      */
-    buildWhereClause(conditions, startIndex = 0) {
+    buildWhereClause(conditions) {
         const clauses = [];
         const values = [];
-        let paramIndex = startIndex;
 
         for (const [key, value] of Object.entries(conditions)) {
-            paramIndex++;
-            
             if (value === null) {
                 clauses.push(`${key} IS NULL`);
             } else if (Array.isArray(value)) {
-                const placeholders = value.map((_, i) => `?`);
+                const placeholders = Array(value.length).fill('?');
                 clauses.push(`${key} IN (${placeholders.join(', ')})`);
                 values.push(...value);
             } else {

@@ -3,6 +3,8 @@
 require('dotenv').config();
 const dbConfig = require('../config/database');
 
+let database;
+
 async function testDatabase() {
     console.log('🧪 Testing Database Connection...\n');
     
@@ -10,8 +12,8 @@ async function testDatabase() {
     console.log(`📊 Database Type: ${dbInfo.type}`);
     console.log(`🔗 Connection: ${dbInfo.connection}\n`);
     
-    try {
-        const database = dbConfig.getDatabase();
+try {
+        database = dbConfig.getDatabase();
         
         console.log('🔌 Initializing database connection...');
         await database.init();

@@ -1,4 +1,4 @@
-const { stripe, PLANS, getPlanByPriceId } = require('../config/stripe');
+const { stripe, getPlanByPriceId } = require('../config/stripe');
 const database = require('../models/database');
 
 class StripeService {

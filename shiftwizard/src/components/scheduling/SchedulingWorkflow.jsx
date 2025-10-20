@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import {
     Play,
     Brain,
-    Clock,
     CheckCircle,
     AlertTriangle,
     Users,
@@ -13,7 +12,7 @@ import {
     Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
@@ -129,7 +128,7 @@ const ConstraintsDialog = ({ isOpen, onOpenChange, constraints, onSave }) => {
 export default function SchedulingWorkflow({ scheduleId, onScheduleComplete }) {
     const [workflowState, setWorkflowState] = useState('idle'); // idle, running, completed, error
     const [currentStep, setCurrentStep] = useState(1);
-    const [schedulingJobId, setSchedulingJobId] = useState(null);
+    // Removed unused schedulingJobId state
     const [schedulingResults, setSchedulingResults] = useState(null);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [constraints, setConstraints] = useState({
@@ -208,8 +207,7 @@ export default function SchedulingWorkflow({ scheduleId, onScheduleComplete }) {
 
             const response = await apiClient.post('/scheduling/run', constraints);
             
-            if (response.data.success) {
-                setSchedulingJobId(response.data.data.jobId);
+                if (response.data.success) {
                 console.log('✅ Scheduling job started:', response.data.data.jobId);
             } else {
                 throw new Error(response.data.message || 'Failed to start scheduling');
@@ -224,7 +222,6 @@ export default function SchedulingWorkflow({ scheduleId, onScheduleComplete }) {
     const resetWorkflow = () => {
         setWorkflowState('idle');
         setCurrentStep(1);
-        setSchedulingJobId(null);
         setSchedulingResults(null);
         setShowSuggestions(false);
         setProgress({ step1: 0, step2: 0, step3: 0, step4: 0 });

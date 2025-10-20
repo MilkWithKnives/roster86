@@ -1,5 +1,4 @@
-import React from 'react';
-import { Calendar, Users, Clock, Zap, Shield, RefreshCw, Bell, BarChart3 } from 'lucide-react';
+import { Calendar, Users, Zap, Shield, RefreshCw, Bell, BarChart3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Landing() {
@@ -36,7 +35,7 @@ export default function Landing() {
               Effortless auto scheduling for all your needs.
             </h1>
             <p className="text-lg text-gray-600 mb-8">
-              Whether you're managing a small team or a large workforce, our platform offers the perfect balance of automation and control.
+              Whether you&apos;re managing a small team or a large workforce, our platform offers the perfect balance of automation and control.
             </p>
             <div className="flex gap-4">
               <button onClick={() => navigate('/register')} className="bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-gray-800 font-medium">
@@ -187,7 +186,7 @@ export default function Landing() {
           <div className="bg-white rounded-2xl shadow-2xl p-8">
             <div className="bg-gray-50 rounded-lg p-6 mb-6">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="font-bold text-gray-900">This Week's Schedule</h4>
+                <h4 className="font-bold text-gray-900">This Week&apos;s Schedule</h4>
                 <span className="text-sm text-gray-500">Sept 11-17, 2024</span>
               </div>
               <div className="space-y-3">

@@ -15,7 +15,7 @@ import UpcomingShifts from "../components/dashboard/UpcomingShifts";
 import SchedulingWorkflow from "../components/scheduling/SchedulingWorkflow";
 
 export default function Dashboard() {
-  const [stats, setStats] = useState({
+  const [, setStats] = useState({
     totalEmployees: 0,
     activeSchedules: 0,
     totalShiftTemplates: 0,

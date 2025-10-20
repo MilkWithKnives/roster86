@@ -68,7 +68,7 @@ const ConfidenceMeter = ({ confidence }) => {
     );
 };
 
-const SuggestionCard = ({ suggestion, gapDetails, onApply, onFeedback }) => {
+const SuggestionCard = ({ suggestion, onApply, onFeedback }) => {
     const [isApplying, setIsApplying] = useState(false);
     const [isApplied, setIsApplied] = useState(false);
 
@@ -374,7 +374,7 @@ export default function AISuggestions({ scheduleId, onSuggestionApplied }) {
                                     <SuggestionCard
                                         key={suggestion.id}
                                         suggestion={suggestion}
-                                        gapDetails={gapData}
+                                        
                                         onApply={handleApplySuggestion}
                                         onFeedback={handleFeedback}
                                     />

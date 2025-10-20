@@ -32,7 +32,6 @@ class OrganizationController {
             
             // Plan selection
             planType = 'trial',
-            billingCycle = 'monthly',
             
             // Optional
             timezone = 'America/New_York',
@@ -209,7 +208,7 @@ class OrganizationController {
                 { expiresIn: '7d' }
             );
 
-            const sessionResult = await client.query(`
+            await client.query(`
                 INSERT INTO sessions (
                     user_id, organization_id, token_hash,
                     device_name, browser, os, ip_address,
@@ -609,6 +608,12 @@ class OrganizationController {
      */
     async inviteTeamMembers(organizationId, invites, invitedById) {
         const results = [];
+
+        // Fetch inviter and organization context for email templates
+        const inviter = await db.findOne('users', { id: invitedById });
+        const organization = await db.findOne('organizations', { id: organizationId });
+        const inviterName = inviter?.full_name || 'Administrator';
+        const organizationName = organization?.name || 'Your Organization';
         
         for (const invite of invites) {
             try {
@@ -632,8 +637,8 @@ class OrganizationController {
                 // Send invitation email
                 await emailService.sendInvitation({
                     email: invite.email,
-                    inviterName: req.user.fullName,
-                    organizationName: req.organization.name,
+                    inviterName,
+                    organizationName,
                     role: invite.role,
                     token: inviteToken
                 });

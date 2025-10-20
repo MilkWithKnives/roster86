@@ -103,11 +103,9 @@ class SchedulingService {
                 stdio: ['pipe', 'pipe', 'pipe']
             });
 
-            let stdout = '';
             let stderr = '';
 
             pythonProcess.stdout.on('data', (data) => {
-                stdout += data.toString();
                 console.log(`🐍 Python stdout: ${data.toString().trim()}`);
                 
                 // Emit intermediate progress if needed
@@ -522,8 +520,11 @@ class SchedulingService {
                 try {
                     await fs.unlink(job.inputFile);
                     await fs.unlink(job.outputFile);
-                } catch (error) {
-                    // Ignore file cleanup errors
+                } catch (e) {
+                    // Ignore file cleanup errors in production, log in development
+                    if (process.env.NODE_ENV === 'development') {
+                        console.debug('Cleanup error (ignored):', e.message);
+                    }
                 }
 
                 this.activeJobs.delete(jobId);

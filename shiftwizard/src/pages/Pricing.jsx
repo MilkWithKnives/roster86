@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Check } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { createCheckoutSession } from '@/api/payments';
 import { useToast } from '@/components/ui/use-toast';

@@ -15,7 +15,7 @@ import Landing from "./Landing";
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import RoleProtectedRoute from '@/components/auth/RoleProtectedRoute';
 
-import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 
 // Removed unused PagesContent function - now using direct Routes in Pages component
 
