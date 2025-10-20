@@ -127,9 +127,9 @@ export default function Layout({ currentPageName, children }) {
             --border-primary: rgba(255, 255, 255, 0.2);
             --border-secondary: rgba(255, 255, 255, 0.1);
             
-            --text-primary: #1a202c;
-            --text-secondary: #4a5568;
-            --text-tertiary: #718096;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-tertiary: #475569;
             --text-light: #ffffff;
             
             --accent-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -140,8 +140,8 @@ export default function Layout({ currentPageName, children }) {
             --shadow-medium: 0 20px 40px rgba(0, 0, 0, 0.1);
             --shadow-strong: 0 30px 60px rgba(0, 0, 0, 0.15);
             
-            --glass-bg: rgba(255, 255, 255, 0.25);
-            --glass-border: rgba(255, 255, 255, 0.18);
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(0, 0, 0, 0.1);
           }
           
           .dark {
@@ -201,7 +201,7 @@ export default function Layout({ currentPageName, children }) {
           }
           
           .premium-button:hover {
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.95);
             transform: translateY(-1px);
             box-shadow: var(--shadow-soft);
           }
@@ -287,7 +287,7 @@ export default function Layout({ currentPageName, children }) {
           }
           
           .modern-button:hover {
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.95);
             transform: translateY(-1px);
             box-shadow: var(--shadow-soft);
           }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
     Brain,
     Clock,
@@ -236,7 +236,7 @@ export default function AISuggestions({ scheduleId, onSuggestionApplied }) {
     const [error, setError] = useState(null);
     const { isConnected } = useWebSocket();
 
-    const fetchSuggestions = async () => {
+    const fetchSuggestions = useCallback(async () => {
         try {
             setLoading(true);
             const response = await apiClient.get(`/suggestions/schedule/${scheduleId}`);
@@ -249,13 +249,13 @@ export default function AISuggestions({ scheduleId, onSuggestionApplied }) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [scheduleId]);
 
     useEffect(() => {
         if (scheduleId) {
             fetchSuggestions();
         }
-    }, [scheduleId]);
+    }, [scheduleId, fetchSuggestions]);
 
     // Listen for AI suggestions ready event
     useEffect(() => {
@@ -268,7 +268,7 @@ export default function AISuggestions({ scheduleId, onSuggestionApplied }) {
 
         window.addEventListener('ai-suggestions-ready', handleAISuggestionsReady);
         return () => window.removeEventListener('ai-suggestions-ready', handleAISuggestionsReady);
-    }, [scheduleId]);
+    }, [scheduleId, fetchSuggestions]);
 
     const handleApplySuggestion = async (suggestionId, notes) => {
         try {

@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Employee, Schedule, Assignment, ShiftTemplate } from "@/api/entities";
+import { Employee, Schedule, Assignment, ShiftTemplate, User } from "@/api/entities";
 import { Button } from "@/components/ui/button";
 import {
   AlertCircle,
@@ -43,12 +43,12 @@ export default function Dashboard() {
         Schedule.list('-created_date', 5),
         ShiftTemplate.list(),
         Assignment.list('-created_date', 10),
-        fetch('/api/auth/me').then(r => r.json()).catch(() => ({ data: null }))
+        User.me().catch(() => null)
       ]);
 
       // Set current user and active schedule
-      if (userResponse.data) {
-        setCurrentUser(userResponse.data);
+      if (userResponse) {
+        setCurrentUser(userResponse);
       }
       
       // Find active schedule
