@@ -169,6 +169,48 @@ export function RulesTab() {
                           className="w-full"
                         />
                       </div>
+
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <Label>Max Consecutive Days</Label>
+                          <Badge variant="secondary">{config.hardRules?.maxConsecutiveDays || 6} days</Badge>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-3">Maximum days an employee can work in a row</p>
+                        <Slider
+                          value={[config.hardRules?.maxConsecutiveDays || 6]}
+                          onValueChange={([value]) => handleHardRuleChange('maxConsecutiveDays', value)}
+                          min={3}
+                          max={7}
+                          step={1}
+                          className="w-full"
+                        />
+                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                          <span>3 days</span>
+                          <span>5 days</span>
+                          <span>7 days</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <Label>Minimum Rest Hours</Label>
+                          <Badge variant="secondary">{config.hardRules?.minRestHours || 10}h</Badge>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-3">Minimum hours between shifts (prevents clopening)</p>
+                        <Slider
+                          value={[config.hardRules?.minRestHours || 10]}
+                          onValueChange={([value]) => handleHardRuleChange('minRestHours', value)}
+                          min={8}
+                          max={16}
+                          step={1}
+                          className="w-full"
+                        />
+                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                          <span>8h</span>
+                          <span>12h</span>
+                          <span>16h</span>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
 

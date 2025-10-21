@@ -92,9 +92,16 @@ class SchedulingService {
      */
     async runPythonScheduler(jobId, inputFile, outputFile) {
         return new Promise((resolve, reject) => {
-            const pythonScript = path.join(__dirname, '..', 'scheduling_runner.py');
-            
-            console.log(`🐍 Starting Python scheduler for job ${jobId}`);
+            // Use new restaurant scheduling engine if available, fall back to old one
+            const useAdvancedEngine = process.env.USE_ADVANCED_SCHEDULER !== 'false'; // Default to true
+            const pythonScript = useAdvancedEngine
+                ? path.join(__dirname, '..', 'restaurant_scheduling_runner.py')
+                : path.join(__dirname, '..', 'scheduling_runner.py');
+
+            console.log(`🐍 Starting ${useAdvancedEngine ? 'ADVANCED' : 'BASIC'} Python scheduler for job ${jobId}`);
+            if (useAdvancedEngine) {
+                console.log(`🎯 Using OptaPlanner-inspired algorithms (Tabu Search + CP-SAT)`);
+            }
             console.log(`📄 Input: ${inputFile}`);
             console.log(`📄 Output: ${outputFile}`);
 
@@ -159,15 +166,29 @@ class SchedulingService {
 
             pythonProcess.on('error', (error) => {
                 console.error('Error spawning Python process:', error);
-                
+
+                // Provide actionable error messages
+                let userMessage = `Failed to execute scheduling: ${error.message}`;
+
+                if (error.code === 'ENOENT') {
+                    userMessage = 'Python3 not found. Please install Python 3.11+ or check PATH.';
+                } else if (error.message.includes('permission')) {
+                    userMessage = 'Permission denied. Try: chmod +x backend/restaurant_scheduling_runner.py';
+                }
+
                 this.emitProgress(jobId, {
                     status: 'error',
-                    message: `Failed to execute scheduling: ${error.message}`,
+                    message: userMessage,
                     progress: 0,
-                    error: error.message
+                    error: error.message,
+                    troubleshooting: {
+                        pythonPath: 'Ensure python3 is installed: python3 --version',
+                        scriptPath: pythonScript,
+                        suggestion: 'Run: cd backend && ./install_and_test.sh'
+                    }
                 });
 
-                reject(error);
+                reject(new Error(userMessage));
             });
         });
     }
@@ -231,19 +252,37 @@ class SchedulingService {
                 }]
             }));
 
+            // Apply budget constraints (NEW for advanced scheduler)
+            const budget = constraints.budget || {
+                max_total_cost: constraints.max_weekly_budget || 8000,
+                max_daily_cost: constraints.max_daily_budget || null,
+                target_cost: constraints.target_cost || null
+            };
+
+            // Apply fairness constraints (NEW for advanced scheduler)
+            const fairness = constraints.fairness || {
+                max_consecutive_days: constraints.max_consecutive_days || 6,
+                min_rest_hours: constraints.min_rest_hours || 12,
+                max_shift_imbalance: constraints.max_shift_imbalance || 4
+            };
+
             // Apply any additional constraints
             const inputData = {
                 workers,
                 shifts,
+                budget,         // NEW: Budget constraints
+                fairness,       // NEW: Fairness constraints
                 constraints: {
                     time_limit: constraints.time_limit || 60,
-                    prefer_fairness: constraints.prefer_fairness || true,
+                    prefer_fairness: constraints.prefer_fairness !== undefined ? constraints.prefer_fairness : true,
                     allow_overtime: constraints.allow_overtime || false,
                     ...constraints
                 }
             };
 
             console.log(`📊 Prepared scheduling data: ${workers.length} workers, ${shifts.length} shifts`);
+            console.log(`💰 Budget: $${budget.max_total_cost} weekly${budget.max_daily_cost ? `, $${budget.max_daily_cost} daily` : ''}`);
+            console.log(`⚖️  Fairness: ${fairness.max_consecutive_days} max days, ${fairness.min_rest_hours}h min rest`);
             return inputData;
 
         } catch (error) {

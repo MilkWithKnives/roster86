@@ -22,6 +22,7 @@ const paymentRoutes = require('./routes/payments');
 const metricsRoutes = require('./routes/metrics');
 const schedulingRoutes = require('./routes/scheduling');
 const suggestionsRoutes = require('./routes/suggestions');
+const healthRoutes = require('./routes/health');
 
 const app = express();
 const server = http.createServer(app);
@@ -111,6 +112,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/metrics', metricsRoutes);
 app.use('/api/scheduling', schedulingRoutes);
 app.use('/api/suggestions', suggestionsRoutes);
+app.use('/api/health', healthRoutes);  // Health checks for monitoring/load balancers
 app.use('/api', integrationRoutes);
 
 // Error handling middleware
